@@ -1,21 +1,25 @@
 package config
 
 import (
-	"fmt"
 	"github.com/spf13/viper"
 	"time"
 )
 
 type Config struct {
-	RabbitMQSource   string        `json:"RABBITMQSOURCE"`
-	DouYingQueueName string        `json:"DOUYINGQUEUENAME"`
-	MaxRetries       int           `json:"MAXRETRIES"`
-	TimeOut          time.Duration `json:"TIMEOUT"`
+	DBSource           string        `mapstructure:"DB_SOURCE"`
+	RabbitMQSource     string        `mapstructure:"RABBITMQSOURCE"`
+	DouYingQueueName   string        `mapstructure:"DOUYINGQUEUENAME"`
+	MaxRetries         int           `mapstructure:"MAXRETRIES"`
+	TimeOut            time.Duration `mapstructure:"TIMEOUT"`
+	AiUrl              string        `mapstructure:"AIURL"`
+	ApiKey             string        `mapstructure:"APIKEY"`
+	AiModel            string        `mapstructure:"AIMODEL"`
+	Role               string        `mapstructure:ROLE`
+	CopyWritingContent string        `mapstructure:COPYWRITINGCONTENT`
 }
 
 func LoadConfig(path string) (*Config, error) {
 	viper.AddConfigPath(path)
-	fmt.Println(path)
 	viper.SetConfigName("app")
 	viper.SetConfigType("env")
 
