@@ -1,44 +1,65 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
-	"github.com/gocolly/colly"
-	"github.com/pule1234/VideoForge/config"
-	"github.com/spf13/viper"
-	"log"
+	"github.com/pule1234/VideoForge/internal/processor"
+	"io/ioutil"
+	"net/http"
+	"strings"
 )
 
-var GlobalConfig *config.Config
-
-func init() {
-	viper.AddConfigPath(".")
-	viper.SetConfigName("app")
-	viper.SetConfigType("env")
-
-	//自动检查环境
-	viper.AutomaticEnv()
-	err := viper.ReadInConfig()
-	if err != nil {
-		log.Fatalf("Error init reading config file, %s", err)
-	}
-	err = viper.Unmarshal(&GlobalConfig)
-}
-
 func main() {
-	c := colly.NewCollector(
-		colly.AllowedDomains("httpbin.org"),
-		colly.MaxDepth(2),
-	)
 
-	c.OnHTML("a[href]", func(e *colly.HTMLElement) {
-		link := e.Attr("href")
-		fmt.Printf("Link found: %q -> %s\n", e.Text, link)
-		//c.Visit(link)
-	})
+	url := "https://api.chatanywhere.tech/v1/chat/completions"
+	method := "POST"
 
-	c.OnError(func(_ *colly.Response, err error) {
-		fmt.Println("Something went wrong:", err)
-	})
+	payload := strings.NewReader(`{"messages": [{"content": "人工智能兴起，帮我对这个关键字生成短视频文案","role": "system"}],"model": "gpt-3.5-turbo"}`)
+	fmt.Println(payload)
+	requestData := map[string]interface{}{
+		"model": "gpt-3.5-turbo",
+		"messages": []map[string]string{
+			{
+				"role":    "system",
+				"content": "人工智能兴起，帮我对这个关键字生成短视频文案",
+			},
+		},
+	}
 
-	c.Visit("http://httpbin.org/links/20/3")
+	jsonRequest, _ := json.Marshal(requestData)
+	payload = strings.NewReader(string(jsonRequest))
+
+	fmt.Println(payload)
+	//return
+
+	client := &http.Client{}
+	req, err := http.NewRequest(method, url, payload)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+
+	req.Header.Add("Authorization", "Bearer sk-E2unVpWd37R5HkoSClednWZkIKd2D3HnOS0Ewy9ydjRIYDgi")
+	req.Header.Add("Content-Type", "application/json")
+
+	res, err := client.Do(req)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	defer res.Body.Close()
+
+	body, err := ioutil.ReadAll(res.Body)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	var str processor.Response
+	err = json.Unmarshal(body, &str)
+	if err != nil {
+		return
+	}
+	fmt.Println(res.StatusCode)
+	fmt.Println(string(body))
+	fmt.Println(str.Choices[0].Message.Content)
 }
