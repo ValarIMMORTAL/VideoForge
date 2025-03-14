@@ -20,7 +20,7 @@ type RabbitMQ struct {
 	queueName string
 }
 
-func NewRabbitConn(queueName string) (*RabbitMQ, error) {
+func NewRabbitConn() (*RabbitMQ, error) {
 	config, err := config.LoadConfig("../../")
 	if err != nil {
 		return nil, errors.New("get config failed : " + err.Error())
@@ -37,13 +37,12 @@ func NewRabbitConn(queueName string) (*RabbitMQ, error) {
 	}
 
 	return &RabbitMQ{
-		conn:      rabbitMqConn,
-		channel:   ch,
-		queueName: queueName,
+		conn:    rabbitMqConn,
+		channel: ch,
 	}, nil
 }
 
-func (r *RabbitMQ) PublishItem(item models.TrendingItem) error {
+func (r *RabbitMQ) PublishItem(item models.TrendingItem, queueName string) error {
 	//1.申请队列，如果队列不存在会自动创建，存在则跳过创建
 	_, err := r.channel.QueueDeclare(
 		r.queueName,
@@ -86,7 +85,7 @@ func (r *RabbitMQ) PublishItem(item models.TrendingItem) error {
 
 // simple 模式下消费者
 // todo 将handler 替换成生成文案的functuon ， 并且将爬取到的关键字（keyword）和关键字来源（item.source）作为参数传入到function中
-func (r *RabbitMQ) ConsumeItem(handler func(item models.TrendingItem) error) {
+func (r *RabbitMQ) ConsumeItem(handler func(item models.TrendingItem) error, queueName string) {
 	//1.申请队列，如果队列不存在会自动创建，存在则跳过创建
 	q, err := r.channel.QueueDeclare(
 		r.queueName,
@@ -102,7 +101,8 @@ func (r *RabbitMQ) ConsumeItem(handler func(item models.TrendingItem) error) {
 		nil,
 	)
 	if err != nil {
-		fmt.Println(err)
+		log.Println("consumer queuedeclare failed:", err.Error())
+		return
 	}
 
 	//接收消息
@@ -121,7 +121,7 @@ func (r *RabbitMQ) ConsumeItem(handler func(item models.TrendingItem) error) {
 		nil,   // args
 	)
 	if err != nil {
-		fmt.Println(err)
+		log.Println("comsumer consume message err : ", err.Error())
 	}
 
 	forever := make(chan bool)
@@ -131,6 +131,15 @@ func (r *RabbitMQ) ConsumeItem(handler func(item models.TrendingItem) error) {
 			//消息逻辑处理，可以自行设计逻辑
 			fmt.Println(d.Body)
 			log.Printf("Received a message: %s", d.Body)
+
+			var item models.TrendingItem
+			err = json.Unmarshal(d.Body, &item)
+			if err != nil {
+				return
+			}
+
+			err = handler(item) //关键字(title) 和信息来源(source)都在item中
+
 		}
 	}()
 
@@ -145,7 +154,7 @@ func NewRabbitConnWithRetry(maxRetries int) (*RabbitMQ, error) {
 	var err error
 
 	for i := 0; i < maxRetries; i++ {
-		conn, err = NewRabbitConn("douyin_queue") // 使用默认队列名，也可以从配置中获取
+		conn, err = NewRabbitConn() // 使用默认队列名，也可以从配置中获取
 		if err == nil {
 			return conn, nil
 		}

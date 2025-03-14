@@ -16,11 +16,11 @@ import (
 type DyCrawler struct {
 	collector Collector
 	queueName string
-	rabbit    RabbitMQClient
+	rabbit    *mq.RabbitMQ
 }
 
 func newDyCrawler(queueName string) (*DyCrawler, error) {
-	baseCrawler, err := NewCrawler()
+	baseCrawler, err := NewCrawler() //已经定义好错误处理
 	if err != nil {
 		return nil, fmt.Errorf("创建爬虫失败: %v", err)
 	}
@@ -39,13 +39,14 @@ func newDyCrawler(queueName string) (*DyCrawler, error) {
 			Title:     e.ChildText("div.title"),
 			URL:       e.ChildAttr("a", "href"),
 			ViewCount: e.ChildText("span.view-count"),
-			CreateAt:  time.Now(),
+			//Source:
+			CreateAt: time.Now(),
 		}
 		res, _ := json.Marshal(&item)
 		fmt.Println(res)
 		// 发送到消息队列
 		if dc.rabbit != nil {
-			if err := dc.rabbit.PublishItem(item); err != nil {
+			if err := dc.rabbit.PublishItem(item, queueName); err != nil {
 				log.Printf("Failed to publish item: %v", err)
 			}
 		}
