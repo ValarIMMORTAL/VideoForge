@@ -28,12 +28,12 @@ func TestPublish(t *testing.T) {
 	str, _ := json.Marshal(loadConfig)
 	fmt.Printf("loadconfig : %s", str)
 
-	conn, err := mq.NewRabbitConn(loadConfig.DouYingQueueName)
+	conn, err := mq.NewRabbitConn()
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
-	conn.PublishItem(testItem)
+	conn.PublishItem(testItem, loadConfig.DouYingQueueName)
 	fmt.Println("发送成功！")
 }
 
@@ -43,13 +43,13 @@ func TestConsumer(t *testing.T) {
 		fmt.Println(err)
 		return
 	}
-	conn, err := mq.NewRabbitConn(loadConfig.DouYingQueueName)
+	conn, err := mq.NewRabbitConn()
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
 
-	conn.ConsumeItem(handler)
+	conn.ConsumeItem(handler, loadConfig.DouYingQueueName)
 
 }
 

@@ -47,9 +47,10 @@ func (p *Processor) CreateCopyWriting(item models.TrendingItem) error {
 
 	req.Header.Add("Authorization", conf.ApiKey)
 	req.Header.Add("Content-Type", "application/json")
-	//if err != nil {
-	//	return errors.New("failed to push copywriting request: " + err.Error())
-	//}
+	res, err := client.Do(req)
+	if err != nil {
+		//	return errors.New("failed to push copywriting request: " + err.Error())
+		//}
 		return errors.New("failed to push copywriting request: " + err.Error())
 	}
 
