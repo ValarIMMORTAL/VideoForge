@@ -17,6 +17,7 @@ import (
 	"time"
 )
 
+// 根据根据关键字及关键字来源生成对应的文案，并存储
 func (p *Processor) CreateCopyWriting(item models.TrendingItem) error {
 	conf, err := config.LoadConfig("../../")
 	if err != nil {
@@ -30,7 +31,7 @@ func (p *Processor) CreateCopyWriting(item models.TrendingItem) error {
 		"messages": []map[string]string{
 			{
 				"role":    conf.Role,
-				"content": conf.CopyWritingContent + "人工智能兴起",
+				"content": conf.CopyWritingContent + item.Source + "，" + item.Title, //拼接提示词，按照app.env中预先写好的格式
 			},
 		},
 	}
@@ -46,9 +47,9 @@ func (p *Processor) CreateCopyWriting(item models.TrendingItem) error {
 
 	req.Header.Add("Authorization", conf.ApiKey)
 	req.Header.Add("Content-Type", "application/json")
-
-	res, err := client.Do(req)
-	if err != nil {
+	//if err != nil {
+	//	return errors.New("failed to push copywriting request: " + err.Error())
+	//}
 		return errors.New("failed to push copywriting request: " + err.Error())
 	}
 
@@ -80,7 +81,7 @@ func (p *Processor) CreateCopyWriting(item models.TrendingItem) error {
 
 	// 构造数据库参数
 	arg := db.CreateCopyParams{
-		Title:   "人工智能兴起",
+		Title:   item.Title,
 		Source:  item.Source,
 		Content: content,
 		Date:    date,
