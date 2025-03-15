@@ -6,6 +6,7 @@ import (
 	"github.com/jackc/pgx/v5"
 	"github.com/pule1234/VideoForge/config"
 	db "github.com/pule1234/VideoForge/db/sqlc"
+	"github.com/pule1234/VideoForge/mq"
 	"testing"
 )
 
@@ -14,6 +15,9 @@ func TestStart(t *testing.T) {
 	if err != nil {
 		fmt.Println(err)
 	}
+
+	//初始化全局mq
+	mq.InitRabbitMQ()
 
 	conn, err := pgx.Connect(context.Background(), loadConfig.DBSource)
 	if err != nil {

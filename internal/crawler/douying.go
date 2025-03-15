@@ -4,9 +4,9 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/pule1234/VideoForge/config"
 	db "github.com/pule1234/VideoForge/db/sqlc"
 	"github.com/pule1234/VideoForge/internal/models"
-	"github.com/pule1234/VideoForge/internal/processor"
 	"log"
 	"time"
 
@@ -52,6 +52,7 @@ func newDyCrawler(queueName string, queries *db.Queries) (*DyCrawler, error) {
 			return
 		}
 
+		var mqItem []models.TrendingItem
 		// 提取热搜数据
 		for _, data := range resp.Data.WordList {
 			fmt.Printf("排名: %d | 标题: %s | 热度: %d | 链接: https://www.douyin.com/hot/%s\n",
@@ -62,11 +63,10 @@ func newDyCrawler(queueName string, queries *db.Queries) (*DyCrawler, error) {
 				Title:    data.Word,
 				Position: data.Position,
 			}
-			err = processor.CreateCopyWriting(item, dc.postgres)
-			if err != nil {
-				return
-			}
+			mqItem = append(mqItem, item)
 		}
+		loadConfig, _ := config.LoadConfig("../../")
+		dc.rabbit.PublishItem(mqItem, loadConfig.DouYingQueueName)
 	})
 
 	return dc, nil

@@ -141,7 +141,7 @@ func (r *RabbitMQ) ConsumeItem(handler func(item models.TrendingItem) error, que
 			}
 
 			err = handler(item) //关键字(title) 和信息来源(source)都在item中
-
+			
 		}
 	}()
 
