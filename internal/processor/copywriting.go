@@ -18,7 +18,7 @@ import (
 )
 
 // 根据根据关键字及关键字来源生成对应的文案，并存储
-func (p *Processor) CreateCopyWriting(item models.TrendingItem) error {
+func CreateCopyWriting(item models.TrendingItem, dbStore *db.Queries) error {
 	conf, err := config.LoadConfig("../../")
 	if err != nil {
 		return err
@@ -90,7 +90,7 @@ func (p *Processor) CreateCopyWriting(item models.TrendingItem) error {
 	str, _ := json.Marshal(arg)
 	fmt.Println(string(str))
 	// 存储到数据库
-	createRes, err := p.store.CreateCopy(context.Background(), arg)
+	createRes, err := dbStore.CreateCopy(context.Background(), arg)
 	fmt.Println("---------------")
 	if err != nil {
 		fmt.Println("错误 : " + err.Error())

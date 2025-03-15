@@ -3,7 +3,7 @@ package mq
 import "sync"
 
 var (
-	globalRabbitMQ *RabbitMQ // 全局使用rabbitmq连接
+	GlobalRabbitMQ *RabbitMQ // 全局使用rabbitmq连接
 	once           sync.Once // 确保只初始化一次
 )
 
@@ -11,7 +11,7 @@ var (
 func InitRabbitMQ() error {
 	var err error
 	once.Do(func() {
-		globalRabbitMQ, err = NewRabbitConn()
+		GlobalRabbitMQ, err = NewRabbitConn()
 	})
 
 	return err
@@ -19,5 +19,5 @@ func InitRabbitMQ() error {
 
 // GetRabbitMQ 获取全局 RabbitMQ 实例
 func GetRabbitMQ() *RabbitMQ {
-	return globalRabbitMQ
+	return GlobalRabbitMQ
 }

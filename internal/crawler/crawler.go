@@ -25,7 +25,7 @@ func NewCrawler() (*Crawler, error) {
 	config, _ := config.LoadConfig(".")
 	c := colly.NewCollector(
 		// 设置http请求的User_Agent 模拟浏览器访问
-		colly.UserAgent("Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36"),
+		colly.UserAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"),
 		// 爬取的最大深度
 		colly.MaxDepth(2),
 	)

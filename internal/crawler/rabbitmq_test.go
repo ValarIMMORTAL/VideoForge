@@ -4,20 +4,16 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/pule1234/VideoForge/config"
+	"github.com/pule1234/VideoForge/internal/models"
 	"github.com/pule1234/VideoForge/mq"
 	"testing"
-	"time"
-
-	"github.com/pule1234/VideoForge/internal/models"
 )
 
 func TestPublish(t *testing.T) {
 	// 创建测试数据
 	testItem := models.TrendingItem{
-		Title:     "测试标题",
-		URL:       "http://test.com/video",
-		ViewCount: "1000次观看",
-		CreateAt:  time.Now().Truncate(time.Second), // 截断到秒，避免精度问题
+		Title: "测试标题",
+		URL:   "http://test.com/video",
 	}
 	loadConfig, err := config.LoadConfig("../../")
 	if err != nil {
