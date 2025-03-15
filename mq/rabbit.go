@@ -42,10 +42,10 @@ func NewRabbitConn() (*RabbitMQ, error) {
 	}, nil
 }
 
-func (r *RabbitMQ) PublishItem(item models.TrendingItem, queueName string) error {
+func (r *RabbitMQ) PublishItem(item []models.TrendingItem, queueName string) error {
 	//1.申请队列，如果队列不存在会自动创建，存在则跳过创建
 	_, err := r.channel.QueueDeclare(
-		r.queueName,
+		queueName,
 		//是否持久化
 		false,
 		//是否自动删除
@@ -62,11 +62,10 @@ func (r *RabbitMQ) PublishItem(item models.TrendingItem, queueName string) error
 	}
 
 	message, _ := json.Marshal(item)
-	fmt.Println(r.queueName)
 	//调用channel 发送消息到队列中
-	r.channel.Publish(
+	err = r.channel.Publish(
 		"",
-		r.queueName,
+		queueName,
 		//如果为true，根据自身exchange类型和routekey规则无法找到符合条件的队列会把消息返还给发送者
 		false,
 		//如果为true，当exchange发送消息到队列后发现队列上没有消费者，则会把消息返还给发送者
@@ -75,11 +74,14 @@ func (r *RabbitMQ) PublishItem(item models.TrendingItem, queueName string) error
 			ContentType: "text/plain",
 			Body:        message,
 		})
-
-	if err = r.waitForPendingMessages(); err != nil {
-		log.Println("等待消息发送超时:", err)
-		return errors.New("等待消息发送超时" + err.Error())
+	if err != nil {
+		return errors.New("push message failed : " + err.Error())
 	}
+
+	//if err = r.waitForPendingMessages(); err != nil {
+	//	log.Println("等待消息发送超时:", err)
+	//	return errors.New("等待消息发送超时" + err.Error())
+	//}
 	return nil
 }
 
@@ -88,7 +90,7 @@ func (r *RabbitMQ) PublishItem(item models.TrendingItem, queueName string) error
 func (r *RabbitMQ) ConsumeItem(handler func(item models.TrendingItem) error, queueName string) {
 	//1.申请队列，如果队列不存在会自动创建，存在则跳过创建
 	q, err := r.channel.QueueDeclare(
-		r.queueName,
+		queueName,
 		//是否持久化
 		false,
 		//是否自动删除

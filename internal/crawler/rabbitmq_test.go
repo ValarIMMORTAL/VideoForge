@@ -11,10 +11,11 @@ import (
 
 func TestPublish(t *testing.T) {
 	// 创建测试数据
-	testItem := models.TrendingItem{
+	testItem := []models.TrendingItem{}
+	testItem = append(testItem, models.TrendingItem{
 		Title: "测试标题",
 		URL:   "http://test.com/video",
-	}
+	})
 	loadConfig, err := config.LoadConfig("../../")
 	if err != nil {
 		fmt.Println(err)
