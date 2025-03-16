@@ -3,63 +3,58 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/pule1234/VideoForge/internal/processor"
-	"io/ioutil"
-	"net/http"
-	"strings"
+	"github.com/gocolly/colly"
+	"time"
 )
 
+type HotSearchResponse struct {
+	Data struct {
+		WordList []struct {
+			Word       string `json:"word"`        // 热搜标题
+			Position   int    `json:"position"`    // 排名
+			HotValue   int    `json:"hot_value"`   // 热度值
+			SentenceID string `json:"sentence_id"` // 句子ID（用于生成链接）
+		} `json:"word_list"`
+	} `json:"data"`
+}
+
 func main() {
+	c := colly.NewCollector(
+		colly.AllowedDomains("www.douyin.com"),
+	)
 
-	url := "https://api.chatanywhere.tech/v1/chat/completions"
-	method := "POST"
+	// 设置请求头（关键字段需更新为当前有效值）
+	c.OnRequest(func(r *colly.Request) {
+		r.Headers.Set("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36")
+		r.Headers.Set("Host", "www.douyin.com")
+		r.Headers.Set("Referer", "https://www.douyin.com/discover")
+		r.Headers.Set("Cookie", "_xsrf=your_xsrf_token; _zap=your_zap_token") // 需替换为实际 Cookie
+	})
 
-	payload := strings.NewReader(`{"messages": [{"content": "人工智能兴起，帮我对这个关键字生成短视频文案","role": "system"}],"model": "gpt-3.5-turbo"}`)
-	fmt.Println(payload)
-	requestData := map[string]interface{}{
-		"model": "gpt-3.5-turbo",
-		"messages": []map[string]string{
-			{
-				"role":    "system",
-				"content": "人工智能兴起，帮我对这个关键字生成短视频文案",
-			},
-		},
+	// 设置速率限制
+	c.Limit(&colly.LimitRule{
+		DomainGlob: "*",
+		Delay:      2 * time.Second,
+	})
+
+	// 调用热搜接口
+	apiURL := "https://www.douyin.com/aweme/v1/web/hot/search/list/?device_platform=webapp&aid=6383&channel=channel_pc_web"
+	c.OnResponse(func(r *colly.Response) {
+		var resp HotSearchResponse
+		if err := json.Unmarshal(r.Body, &resp); err != nil {
+			fmt.Println("JSON 解析失败:", err)
+			return
+		}
+
+		// 提取热搜数据
+		for _, item := range resp.Data.WordList {
+			fmt.Printf("排名: %d | 标题: %s | 热度: %d | 链接: https://www.douyin.com/hot/%s\n",
+				item.Position, item.Word, item.HotValue, item.SentenceID)
+		}
+	})
+
+	// 发送请求
+	if err := c.Visit(apiURL); err != nil {
+		fmt.Println("请求失败:", err)
 	}
-
-	jsonRequest, _ := json.Marshal(requestData)
-	payload = strings.NewReader(string(jsonRequest))
-
-	fmt.Println(payload)
-	//return
-
-	client := &http.Client{}
-	req, err := http.NewRequest(method, url, payload)
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
-
-	req.Header.Add("Authorization", "Bearer sk-E2unVpWd37R5HkoSClednWZkIKd2D3HnOS0Ewy9ydjRIYDgi")
-	req.Header.Add("Content-Type", "application/json")
-
-	res, err := client.Do(req)
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
-	defer res.Body.Close()
-
-	body, err := ioutil.ReadAll(res.Body)
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
-	var str processor.Response
-	err = json.Unmarshal(body, &str)
-	if err != nil {
-		return
-	}
-	fmt.Println(res.StatusCode)
-	fmt.Println(string(body))
-	fmt.Println(str.Choices[0].Message.Content)
 }

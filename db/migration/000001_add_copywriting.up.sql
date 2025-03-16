@@ -7,3 +7,4 @@ CREATE TABLE "copywriting" (
                                "created_at" timestamptz NOT NULL DEFAULT (now()),
                                "delete_at" timestamp default null
 );
+

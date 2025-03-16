@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	db "github.com/pule1234/VideoForge/db/sqlc"
 	"github.com/pule1234/VideoForge/internal/models"
 	"log"
 	"time"
@@ -42,10 +43,10 @@ func NewRabbitConn() (*RabbitMQ, error) {
 	}, nil
 }
 
-func (r *RabbitMQ) PublishItem(item models.TrendingItem, queueName string) error {
+func (r *RabbitMQ) PublishItem(item []models.TrendingItem, queueName string) error {
 	//1.申请队列，如果队列不存在会自动创建，存在则跳过创建
 	_, err := r.channel.QueueDeclare(
-		r.queueName,
+		queueName,
 		//是否持久化
 		false,
 		//是否自动删除
@@ -62,11 +63,10 @@ func (r *RabbitMQ) PublishItem(item models.TrendingItem, queueName string) error
 	}
 
 	message, _ := json.Marshal(item)
-	fmt.Println(r.queueName)
 	//调用channel 发送消息到队列中
-	r.channel.Publish(
+	err = r.channel.Publish(
 		"",
-		r.queueName,
+		queueName,
 		//如果为true，根据自身exchange类型和routekey规则无法找到符合条件的队列会把消息返还给发送者
 		false,
 		//如果为true，当exchange发送消息到队列后发现队列上没有消费者，则会把消息返还给发送者
@@ -75,20 +75,23 @@ func (r *RabbitMQ) PublishItem(item models.TrendingItem, queueName string) error
 			ContentType: "text/plain",
 			Body:        message,
 		})
-
-	if err = r.waitForPendingMessages(); err != nil {
-		log.Println("等待消息发送超时:", err)
-		return errors.New("等待消息发送超时" + err.Error())
+	if err != nil {
+		return errors.New("push message failed : " + err.Error())
 	}
+
+	//if err = r.waitForPendingMessages(); err != nil {
+	//	log.Println("等待消息发送超时:", err)
+	//	return errors.New("等待消息发送超时" + err.Error())
+	//}
 	return nil
 }
 
 // simple 模式下消费者
 // todo 将handler 替换成生成文案的functuon ， 并且将爬取到的关键字（keyword）和关键字来源（item.source）作为参数传入到function中
-func (r *RabbitMQ) ConsumeItem(handler func(item models.TrendingItem) error, queueName string) {
+func (r *RabbitMQ) ConsumeItem(handler func(item []models.TrendingItem, dbStore *db.Queries) error, queueName string, dbStore *db.Queries) {
 	//1.申请队列，如果队列不存在会自动创建，存在则跳过创建
 	q, err := r.channel.QueueDeclare(
-		r.queueName,
+		queueName,
 		//是否持久化
 		false,
 		//是否自动删除
@@ -129,17 +132,15 @@ func (r *RabbitMQ) ConsumeItem(handler func(item models.TrendingItem) error, que
 	go func() {
 		for d := range msgs {
 			//消息逻辑处理，可以自行设计逻辑
-			fmt.Println(d.Body)
 			log.Printf("Received a message: %s", d.Body)
 
-			var item models.TrendingItem
-			err = json.Unmarshal(d.Body, &item)
+			var items []models.TrendingItem
+			err = json.Unmarshal(d.Body, &items)
 			if err != nil {
 				return
 			}
 
-			err = handler(item) //关键字(title) 和信息来源(source)都在item中
-
+			err = handler(items, dbStore) //关键字(title) 和信息来源(source)都在item中
 		}
 	}()
 

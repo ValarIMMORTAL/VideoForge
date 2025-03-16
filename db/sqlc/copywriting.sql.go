@@ -49,6 +49,37 @@ func (q *Queries) CreateCopy(ctx context.Context, arg CreateCopyParams) (Copywri
 	return i, err
 }
 
+const createMultipleCopy = `-- name: CreateMultipleCopy :exec
+INSERT INTO copywriting(
+    title,
+    source,
+    content,
+    date
+)
+select
+    unnest($1::text[]),
+    unnest($2::text[]),
+    unnest($3::text[]),
+    unnest($4::timestamp[])
+`
+
+type CreateMultipleCopyParams struct {
+	Column1 []string           `json:"column_1"`
+	Column2 []string           `json:"column_2"`
+	Column3 []string           `json:"column_3"`
+	Column4 []pgtype.Timestamp `json:"column_4"`
+}
+
+func (q *Queries) CreateMultipleCopy(ctx context.Context, arg CreateMultipleCopyParams) error {
+	_, err := q.db.Exec(ctx, createMultipleCopy,
+		arg.Column1,
+		arg.Column2,
+		arg.Column3,
+		arg.Column4,
+	)
+	return err
+}
+
 const deleteCopy = `-- name: DeleteCopy :exec
 update copywriting
 set delete_at = $1
