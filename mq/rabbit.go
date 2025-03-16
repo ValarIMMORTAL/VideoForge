@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	db "github.com/pule1234/VideoForge/db/sqlc"
 	"github.com/pule1234/VideoForge/internal/models"
 	"log"
 	"time"
@@ -87,7 +88,7 @@ func (r *RabbitMQ) PublishItem(item []models.TrendingItem, queueName string) err
 
 // simple 模式下消费者
 // todo 将handler 替换成生成文案的functuon ， 并且将爬取到的关键字（keyword）和关键字来源（item.source）作为参数传入到function中
-func (r *RabbitMQ) ConsumeItem(handler func(item models.TrendingItem) error, queueName string) {
+func (r *RabbitMQ) ConsumeItem(handler func(item []models.TrendingItem, dbStore *db.Queries) error, queueName string, dbStore *db.Queries) {
 	//1.申请队列，如果队列不存在会自动创建，存在则跳过创建
 	q, err := r.channel.QueueDeclare(
 		queueName,
@@ -131,17 +132,15 @@ func (r *RabbitMQ) ConsumeItem(handler func(item models.TrendingItem) error, que
 	go func() {
 		for d := range msgs {
 			//消息逻辑处理，可以自行设计逻辑
-			fmt.Println(d.Body)
 			log.Printf("Received a message: %s", d.Body)
 
-			var item models.TrendingItem
-			err = json.Unmarshal(d.Body, &item)
+			var items []models.TrendingItem
+			err = json.Unmarshal(d.Body, &items)
 			if err != nil {
 				return
 			}
 
-			err = handler(item) //关键字(title) 和信息来源(source)都在item中
-			
+			err = handler(items, dbStore) //关键字(title) 和信息来源(source)都在item中
 		}
 	}()
 

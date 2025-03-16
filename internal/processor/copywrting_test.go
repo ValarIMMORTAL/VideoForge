@@ -19,16 +19,16 @@ func TestCreateCopyWriting(t *testing.T) {
 	if err != nil {
 		t.Error("connect postgres err : " + err.Error())
 	}
-	var item = models.TrendingItem{
-		Source: "douying",
-	}
+	var items = []models.TrendingItem{}
+	items = append(items, models.TrendingItem{
+		Source: "", // 填写参数
+		Title:  "", // 填写参数
+	})
 	defer conn.Close(context.Background())
 
 	q := db.New(conn)
 
-	processor := NewProcessor(q)
-
-	err = processor.CreateCopyWriting(item)
+	err = CreateCopyWriting(items, q)
 	if err != nil {
 		return
 	}

@@ -26,3 +26,16 @@ offset $3;
 update copywriting
 set delete_at = $1
 where id = $2;
+
+-- name: CreateMultipleCopy :exec
+INSERT INTO copywriting(
+    title,
+    source,
+    content,
+    date
+)
+select
+    unnest($1::text[]),
+    unnest($2::text[]),
+    unnest($3::text[]),
+    unnest($4::timestamp[]);

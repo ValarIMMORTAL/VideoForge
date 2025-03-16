@@ -10,6 +10,7 @@ import (
 
 type Querier interface {
 	CreateCopy(ctx context.Context, arg CreateCopyParams) (Copywriting, error)
+	CreateMultipleCopy(ctx context.Context, arg CreateMultipleCopyParams) error
 	DeleteCopy(ctx context.Context, arg DeleteCopyParams) error
 	GetCopy(ctx context.Context, id int64) (Copywriting, error)
 	ListCopies(ctx context.Context, arg ListCopiesParams) ([]Copywriting, error)
