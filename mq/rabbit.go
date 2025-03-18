@@ -128,6 +128,7 @@ func (r *RabbitMQ) ConsumeItem(handler func(item []models.TrendingItem, dbStore 
 	}
 
 	forever := make(chan bool)
+	errChan := make(chan error)
 	//启用协程处理消息
 	go func() {
 		for d := range msgs {
@@ -141,10 +142,15 @@ func (r *RabbitMQ) ConsumeItem(handler func(item []models.TrendingItem, dbStore 
 			}
 
 			err = handler(items, dbStore) //关键字(title) 和信息来源(source)都在item中
+			if err != nil {
+				errChan <- err
+			}
 		}
 	}()
 
 	log.Printf(" [*] Waiting for messages. To exit press CTRL+C")
+	err = <-errChan
+	log.Printf("handler err is :" + err.Error())
 	<-forever
 
 }
