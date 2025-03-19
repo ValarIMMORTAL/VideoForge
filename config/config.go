@@ -2,6 +2,7 @@ package config
 
 import (
 	"github.com/spf13/viper"
+	"os"
 	"time"
 )
 
@@ -20,7 +21,9 @@ type Config struct {
 
 func LoadConfig(path string) (*Config, error) {
 	viper.AddConfigPath(path)
-	viper.SetConfigName("app")
+	configName := os.Getenv("APP_ENV")
+	
+	viper.SetConfigName(configName)
 	viper.SetConfigType("env")
 
 	//自动检查环境
