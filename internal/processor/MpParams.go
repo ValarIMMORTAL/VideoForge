@@ -30,3 +30,32 @@ type VideoParams struct {
 	NThreads            int     `json:"n_threads"`
 	ParagraphNumber     int     `json:"paragraph_number"`
 }
+
+type VideoResults struct {
+	Status  int       `json:"status"`
+	Message string    `json:"message"`
+	Data    VideoData `json:"data"`
+}
+
+type VideoData struct {
+	TaskId string `json:"task_id"`
+}
+
+type TaskResult struct {
+	Status  int      `json:"status"`
+	Message string   `json:"message"`
+	Data    TaskData `json:"data"`
+}
+
+type TaskData struct {
+	State          int      `json:"state"`
+	Progress       int      `json:"progress"`
+	Videos         []string `json:"videos"`
+	CombinedVideos []string `json:"combined_videos"`
+	Script         string   `json:"script"`
+	Terms          string   `json:"terms"`
+	AudioFile      string   `json:"audio_file"`
+	AudioDuration  int      `json:"audio_duration"`
+	SubtitlePath   string   `json:"subtitle_path"`
+	Materials      []string `json:"materials"`
+}
