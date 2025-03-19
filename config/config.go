@@ -22,7 +22,7 @@ type Config struct {
 func LoadConfig(path string) (*Config, error) {
 	viper.AddConfigPath(path)
 	configName := os.Getenv("APP_ENV")
-	
+
 	viper.SetConfigName(configName)
 	viper.SetConfigType("env")
 
