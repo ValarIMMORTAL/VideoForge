@@ -22,7 +22,7 @@ func TestPublish(t *testing.T) {
 	})
 	loadConfig, err := config.LoadConfig("../../")
 	if err != nil {
-		fmt.Println(err)
+		fmt.Println("loadConfig err" + err.Error())
 		return
 	}
 
