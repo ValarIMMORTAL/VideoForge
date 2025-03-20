@@ -1,4 +1,4 @@
-DB_URL=postgresql://sj_admin:123@localhost:5431/videoforge?sslmode=disable
+DB_URL=postgresql://arseqs:arseqs@localhost:5432/videoforge?sslmode=disable
 
 new_migration:
 	migrate create -ext sql -dir db/migration -seq $(name)
