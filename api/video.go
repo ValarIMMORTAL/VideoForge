@@ -14,9 +14,9 @@ func (server *Server) generateVideo(ctx *gin.Context) {
 		ctx.JSON(http.StatusBadRequest, errorResponse(err))
 		return
 	}
-
 	//todo 进行用户认证，从token中获取到用户信息，将用户和视频生成的taskId进行绑定，存储在redis中，方便后续通知对应用户对应的视频已经生成
 	//userId := 0
+	userName := ""
 
 	arg := processor.VideoParams{
 		VideoSubject:        req.VideoSubject,
@@ -56,7 +56,7 @@ func (server *Server) generateVideo(ctx *gin.Context) {
 	}
 
 	//将返回的taskID和user_id存储到数据库中
-	//server.redis
+	server.redis.SAdd(ctx, userName, result)
 
 	ctx.JSON(http.StatusOK, result)
 }

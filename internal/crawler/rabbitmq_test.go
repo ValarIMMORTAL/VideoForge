@@ -52,11 +52,11 @@ func TestConsumer(t *testing.T) {
 	}
 	q := db.New(conn)
 
-	crawler, err := newDyCrawler(loadConfig.DouYingQueueName, q)
+	crawler, err := NewDyCrawler(loadConfig.DouYingQueueName, q)
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
-	crawler.rabbit.ConsumeItem(processor.CreateCopyWriting, loadConfig.DouYingQueueName, crawler.postgres)
+	crawler.Rabbit.ConsumeItem(processor.CreateCopyWriting, loadConfig.DouYingQueueName, crawler.Postgres)
 
 }

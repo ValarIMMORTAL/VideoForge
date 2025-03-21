@@ -23,6 +23,7 @@ type Config struct {
 	TaskEndpoint         string        `mapstructure:TASKENDPOINT`
 	RedisSource          string        `mapstructure:"REDISSOURCE"`
 	RedisPassword        string        `mapstructure:"REDISPASSWORD"`
+	HTTPServerAddress    string        `mapstructure:"HTTP_SERVER_ADDRESS"`
 }
 
 func LoadConfig(path string) (*Config, error) {

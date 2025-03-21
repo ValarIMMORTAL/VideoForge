@@ -1,38 +1,37 @@
 package processor
 
 type Response struct {
-	ID                string   `json:"id"`
-	Choices           []Choice `json:"choices"`
-	Created           int64    `json:"created"`
-	Model             string   `json:"model"`
-	Usage             Usage    `json:"usage"`
-	SystemFingerprint string   `json:"system_fingerprint"`
+	ID      string    `json:"id"`
+	Choices []Choice  `json:"choices"`
+	Created int64     `json:"created"`
+	Model   string    `json:"model"`
+	Object  string    `json:"object"`
+	Usage   UsageInfo `json:"usage"`
 }
 
 type Choice struct {
-	Index   int     `json:"index"`
-	Message Message `json:"message"`
+	Index        int     `json:"index"`
+	Message      Message `json:"message"`
+	Logprobs     *string `json:"logprobs"` // 可以是 null，所以用指针
+	FinishReason string  `json:"finish_reason"`
 }
 
 type Message struct {
-	Role    string `json:"role"`
-	Content string `json:"content"`
+	Role             string `json:"role"`
+	Content          string `json:"content"`
+	ReasoningContent string `json:"reasoning_content"`
 }
 
-type Usage struct {
-	PromptTokens            int                     `json:"prompt_tokens"`
-	CompletionTokens        int                     `json:"completion_tokens"`
-	TotalTokens             int                     `json:"total_tokens"`
-	CompletionTokensDetails CompletionTokensDetails `json:"completion_tokens_details"`
-	PromptTokensDetails     PromptTokensDetails     `json:"prompt_tokens_details"`
+type UsageInfo struct {
+	PromptTokens      int          `json:"prompt_tokens"`
+	CompletionTokens  int          `json:"completion_tokens"`
+	TotalTokens       int          `json:"total_tokens"`
+	CompletionDetails TokenDetails `json:"completion_tokens_details"`
+	PromptDetails     TokenDetails `json:"prompt_tokens_details"`
+	SystemFingerprint *string      `json:"system_fingerprint"` // 可以是 null
 }
 
-type CompletionTokensDetails struct {
-	AudioTokens     int `json:"audio_tokens"`
+type TokenDetails struct {
 	ReasoningTokens int `json:"reasoning_tokens"`
-}
-
-type PromptTokensDetails struct {
-	AudioTokens  int `json:"audio_tokens"`
-	CachedTokens int `json:"cached_tokens"`
+	CachedTokens    int `json:"cached_tokens"`
 }

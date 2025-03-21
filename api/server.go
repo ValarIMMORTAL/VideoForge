@@ -5,6 +5,7 @@ import (
 	"github.com/pule1234/VideoForge/cache"
 	"github.com/pule1234/VideoForge/config"
 	db "github.com/pule1234/VideoForge/db/sqlc"
+	"net/http"
 )
 
 type Server struct {
@@ -20,6 +21,7 @@ func NewServer(conf config.Config, store db.Store) (*Server, error) {
 		config: conf,
 		store:  store,
 		router: gin.Default(),
+		redis:  cache.RedisClient,
 	}
 	server.setupRouter()
 
@@ -27,12 +29,21 @@ func NewServer(conf config.Config, store db.Store) (*Server, error) {
 }
 
 func (server *Server) setupRouter() {
-	router := server.router
+	router := gin.Default()
 	//todo route定义
 	router.POST("/generateVideo", server.generateVideo)
+	router.GET("/ping", func(c *gin.Context) {
+		c.JSON(http.StatusOK, gin.H{
+			"message": "pong",
+		})
+	})
 	server.router = router
 }
 
 func errorResponse(err error) gin.H {
 	return gin.H{"error": err.Error()}
+}
+
+func (server *Server) Start(address string) error {
+	return server.router.Run(address)
 }
