@@ -64,7 +64,6 @@ func TestConsumer(t *testing.T) {
 	crawler.rabbit.ConsumeItem(processor.CreateCopyWriting, loadConfig.DouYingQueueName, crawler.postgres, ctx)
 	log.Println("end consumer")
 
-	log.Println("running...")
 	time.Sleep(10 * time.Second)
-	
+
 }
