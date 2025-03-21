@@ -66,4 +66,5 @@ func TestConsumer(t *testing.T) {
 
 	log.Println("running...")
 	time.Sleep(10 * time.Second)
+	
 }
