@@ -14,6 +14,8 @@ import (
 )
 
 func main() {
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
 	loadConfig, err := config.LoadConfig(".")
 	if err != nil {
 		log.Fatal("cannot load config", err)
@@ -22,7 +24,7 @@ func main() {
 	mq.InitRabbitMQ()
 	cache.InitRedis()
 
-	conn, err := pgx.Connect(context.Background(), loadConfig.DBSource)
+	conn, err := pgx.Connect(ctx, loadConfig.DBSource)
 
 	if err != nil {
 		log.Fatal("connect postgres err ", err)
@@ -30,7 +32,7 @@ func main() {
 	q := db.New(conn)
 
 	dyCrawler, err := crawler.NewDyCrawler(loadConfig.DouYingQueueName, q)
-	go dyCrawler.Rabbit.ConsumeItem(processor.CreateCopyWriting, loadConfig.DouYingQueueName, dyCrawler.Postgres)
+	go dyCrawler.Rabbit.ConsumeItem(ctx, processor.CreateCopyWriting, loadConfig.DouYingQueueName, dyCrawler.Postgres)
 	runGinServer(*loadConfig, q)
 }
 

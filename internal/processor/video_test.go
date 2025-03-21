@@ -4,10 +4,12 @@ import (
 	"context"
 	"fmt"
 	"testing"
+	"time"
 )
 
 func TestGenerate(t *testing.T) {
-	ctx := context.Background()
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+	defer cancel() // 确保资源释放
 
 	var arg = VideoParams{}
 	taskid, err := GenerateVideo(ctx, arg)
