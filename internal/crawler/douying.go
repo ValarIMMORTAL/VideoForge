@@ -16,23 +16,23 @@ import (
 )
 
 type DyCrawler struct {
-	collector Collector
-	queueName string
-	rabbit    *mq.RabbitMQ //全局mq连接
-	postgres  *db.Queries  // 数据库连接， 所有的Crawler都会携带一个连接， processor便不需要连接
+	Collector Collector
+	QueueName string
+	Rabbit    *mq.RabbitMQ //全局mq连接
+	Postgres  *db.Queries  // 数据库连接， 所有的Crawler都会携带一个连接， processor便不需要连接
 }
 
-func newDyCrawler(queueName string, queries *db.Queries) (*DyCrawler, error) {
+func NewDyCrawler(queueName string, queries *db.Queries) (*DyCrawler, error) {
 	baseCrawler, err := NewCrawler() //已经定义好错误处理
 	if err != nil {
 		return nil, fmt.Errorf("创建爬虫失败: %v", err)
 	}
 
 	dc := &DyCrawler{
-		collector: baseCrawler,
-		queueName: queueName,
-		rabbit:    mq.GlobalRabbitMQ,
-		postgres:  queries,
+		Collector: baseCrawler,
+		QueueName: queueName,
+		Rabbit:    mq.GlobalRabbitMQ,
+		Postgres:  queries,
 	}
 
 	// 设置爬虫回调
@@ -66,7 +66,7 @@ func newDyCrawler(queueName string, queries *db.Queries) (*DyCrawler, error) {
 			mqItem = append(mqItem, item)
 		}
 		loadConfig, _ := config.LoadConfig("../../")
-		dc.rabbit.PublishItem(mqItem, loadConfig.DouYingQueueName)
+		dc.Rabbit.PublishItem(mqItem, loadConfig.DouYingQueueName)
 	})
 
 	return dc, nil
@@ -74,7 +74,7 @@ func newDyCrawler(queueName string, queries *db.Queries) (*DyCrawler, error) {
 
 // url := "https://www.douyin.com/aweme/v1/web/hot/search/list/?device_platform=webapp&aid=6383&channel=channel_pc_web"
 func (d *DyCrawler) Start(url string) error {
-	err := d.collector.Visit(url)
+	err := d.Collector.Visit(url)
 	if err != nil {
 		return errors.New("DouYing_Crawler error: " + err.Error() + "\n DouYing_URL: " + url)
 	}
@@ -84,8 +84,8 @@ func (d *DyCrawler) Start(url string) error {
 
 // 优化关闭方法
 func (d *DyCrawler) Stop() {
-	if d.rabbit != nil {
-		if err := d.rabbit.CloseWithTimeout(10 * time.Second); err != nil { // 延长关闭超时时间
+	if d.Rabbit != nil {
+		if err := d.Rabbit.CloseWithTimeout(10 * time.Second); err != nil { // 延长关闭超时时间
 			log.Printf("RabbitMQ关闭错误: %v", err)
 		}
 	}

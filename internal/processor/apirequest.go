@@ -3,12 +3,32 @@ package processor
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"github.com/pule1234/VideoForge/config"
 	"io/ioutil"
 	"net/http"
+	"net/url"
 	"strconv"
 	"strings"
 )
+
+// 拼接请求URL
+func BuildUrl(baseUrl, endPoint string, pathParams ...string) (string, error) {
+	base, err := url.Parse(baseUrl)
+	if err != nil {
+		return "", fmt.Errorf(fmt.Sprintf("Invalid base URL: %s", err))
+	}
+
+	fullPath := strings.TrimRight(base.Path, "/") + "/" + strings.TrimRight(endPoint, "/")
+	for _, pathParam := range pathParams {
+		fullPath += "/" + strings.Trim(pathParam, "/")
+	}
+
+	base.Path = fullPath
+
+	// 返回完整 URL
+	return base.String(), nil
+}
 
 // 封装api请求的function
 func SendPostRequest(

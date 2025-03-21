@@ -152,7 +152,6 @@ func (r *RabbitMQ) ConsumeItem(handler func(item []models.TrendingItem, dbStore 
 	err = <-errChan
 	log.Printf("handler err is :" + err.Error())
 	<-forever
-
 }
 
 // 新增带重试的连接方法

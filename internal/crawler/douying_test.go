@@ -24,7 +24,7 @@ func TestStart(t *testing.T) {
 		t.Error("connect postgres err : " + err.Error())
 	}
 	q := db.New(conn)
-	crawler, err := newDyCrawler(loadConfig.DouYingQueueName, q)
+	crawler, err := NewDyCrawler(loadConfig.DouYingQueueName, q)
 	if err != nil {
 		fmt.Println(err)
 	}
