@@ -1,6 +1,7 @@
 package mq
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -88,7 +89,7 @@ func (r *RabbitMQ) PublishItem(item []models.TrendingItem, queueName string) err
 
 // simple 模式下消费者
 // todo 将handler 替换成生成文案的functuon ， 并且将爬取到的关键字（keyword）和关键字来源（item.source）作为参数传入到function中
-func (r *RabbitMQ) ConsumeItem(handler func(item []models.TrendingItem, dbStore *db.Queries) error, queueName string, dbStore *db.Queries) {
+func (r *RabbitMQ) ConsumeItem(handler func(item []models.TrendingItem, dbStore *db.Queries) error, queueName string, dbStore *db.Queries, ctx context.Context) {
 	//1.申请队列，如果队列不存在会自动创建，存在则跳过创建
 	q, err := r.channel.QueueDeclare(
 		queueName,
@@ -125,34 +126,36 @@ func (r *RabbitMQ) ConsumeItem(handler func(item []models.TrendingItem, dbStore 
 	)
 	if err != nil {
 		log.Println("comsumer consume message err : ", err.Error())
+		return
 	}
 
-	forever := make(chan bool)
-	errChan := make(chan error)
 	//启用协程处理消息
 	go func() {
-		for d := range msgs {
-			//消息逻辑处理，可以自行设计逻辑
-			log.Printf("Received a message: %s", d.Body)
-
-			var items []models.TrendingItem
-			err = json.Unmarshal(d.Body, &items)
-			if err != nil {
+		for {
+			select {
+			case <-ctx.Done():
+				log.Println("Received shutdown signal. Exiting...")
 				return
-			}
 
-			err = handler(items, dbStore) //关键字(title) 和信息来源(source)都在item中
-			if err != nil {
-				errChan <- err
+			case d, ok := <-msgs:
+				if !ok {
+					return
+				}
+				//消息逻辑处理，可以自行设计逻辑
+				log.Printf("Received a message: %s", d.Body)
+
+				var items []models.TrendingItem
+				_ = json.Unmarshal(d.Body, &items)
+
+				err = handler(items, dbStore) //关键字(title) 和信息来源(source)都在item中
+				if err != nil {
+					log.Println("处理消息失败:", err)
+					return
+				}
 			}
 		}
 	}()
-
-	log.Printf(" [*] Waiting for messages. To exit press CTRL+C")
-	err = <-errChan
-	log.Printf("handler err is :" + err.Error())
-	<-forever
-
+	return
 }
 
 // 新增带重试的连接方法

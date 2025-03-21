@@ -10,7 +10,9 @@ import (
 	"github.com/pule1234/VideoForge/internal/models"
 	"github.com/pule1234/VideoForge/internal/processor"
 	"github.com/pule1234/VideoForge/mq"
+	"log"
 	"testing"
+	"time"
 )
 
 func TestPublish(t *testing.T) {
@@ -39,6 +41,8 @@ func TestPublish(t *testing.T) {
 }
 
 func TestConsumer(t *testing.T) {
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
 	loadConfig, err := config.LoadConfig("../../")
 	if err != nil {
 		fmt.Println(err)
@@ -57,6 +61,9 @@ func TestConsumer(t *testing.T) {
 		fmt.Println(err)
 		return
 	}
-	crawler.rabbit.ConsumeItem(processor.CreateCopyWriting, loadConfig.DouYingQueueName, crawler.postgres)
+	crawler.rabbit.ConsumeItem(processor.CreateCopyWriting, loadConfig.DouYingQueueName, crawler.postgres, ctx)
+	log.Println("end consumer")
 
+	log.Println("running...")
+	time.Sleep(10 * time.Second)
 }
