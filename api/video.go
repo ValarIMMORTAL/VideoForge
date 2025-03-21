@@ -7,11 +7,11 @@ import (
 )
 
 // 视频处理相关接口
-func (server *Server) generateVideo(ctx *gin.Context) {
+func (server *Server) generateVideo(c *gin.Context) {
 	var req generateVideo
 
-	if err := ctx.ShouldBindJSON(&req); err != nil {
-		ctx.JSON(http.StatusBadRequest, errorResponse(err))
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, errorResponse(err))
 		return
 	}
 	//todo 进行用户认证，从token中获取到用户信息，将用户和视频生成的taskId进行绑定，存储在redis中，方便后续通知对应用户对应的视频已经生成
@@ -49,14 +49,16 @@ func (server *Server) generateVideo(ctx *gin.Context) {
 		ParagraphNumber:     req.ParagraphNumber,
 	}
 
+	//转换为context
+	ctx := c.Request.Context()
 	result, err := processor.GenerateVideo(ctx, arg)
 	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		c.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
 	}
 
 	//将返回的taskID和user_id存储到数据库中
-	server.redis.SAdd(ctx, userName, result)
+	server.redis.SAdd(c, userName, result)
 
-	ctx.JSON(http.StatusOK, result)
+	c.JSON(http.StatusOK, result)
 }
