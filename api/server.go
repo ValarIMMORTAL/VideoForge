@@ -5,6 +5,7 @@ import (
 	"github.com/pule1234/VideoForge/cache"
 	"github.com/pule1234/VideoForge/config"
 	db "github.com/pule1234/VideoForge/db/sqlc"
+	"github.com/pule1234/VideoForge/token"
 	"net/http"
 )
 
@@ -12,8 +13,9 @@ type Server struct {
 	config config.Config //读取文件配置
 	store  db.Store
 	//tokenMaker token.Maker
-	router *gin.Engine
-	redis  *cache.Redis
+	router     *gin.Engine
+	redis      *cache.Redis
+	tokenMaker token.Maker
 }
 
 func NewServer(conf config.Config, store db.Store) (*Server, error) {
@@ -31,6 +33,10 @@ func NewServer(conf config.Config, store db.Store) (*Server, error) {
 func (server *Server) setupRouter() {
 	router := gin.Default()
 	//todo route定义
+	router.POST("/users", server.createUser)
+	router.POST("/users/login", server.loginUser)
+	//加入token
+
 	router.POST("/generateVideo", server.generateVideo)
 	router.GET("/ping", func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{

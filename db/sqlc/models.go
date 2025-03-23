@@ -7,6 +7,7 @@ package db
 import (
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
@@ -18,4 +19,23 @@ type Copywriting struct {
 	Date      pgtype.Timestamp `json:"date"`
 	CreatedAt time.Time        `json:"created_at"`
 	DeleteAt  pgtype.Timestamp `json:"delete_at"`
+}
+
+type Session struct {
+	ID           uuid.UUID `json:"id"`
+	UserID       int32     `json:"user_id"`
+	RefreshToken string    `json:"refresh_token"`
+	UserAgent    string    `json:"user_agent"`
+	ClientIp     string    `json:"client_ip"`
+	IsBlocked    bool      `json:"is_blocked"`
+	ExpiresAt    time.Time `json:"expires_at"`
+	CreatedAt    time.Time `json:"created_at"`
+}
+
+type User struct {
+	ID             int32     `json:"id"`
+	Username       string    `json:"username"`
+	HashedPassword string    `json:"hashed_password"`
+	Email          string    `json:"email"`
+	CreatedAt      time.Time `json:"created_at"`
 }

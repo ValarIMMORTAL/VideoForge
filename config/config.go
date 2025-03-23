@@ -23,6 +23,8 @@ type Config struct {
 	RedisSource          string        `mapstructure:"REDISSOURCE"`
 	RedisPassword        string        `mapstructure:"REDISPASSWORD"`
 	HTTPServerAddress    string        `mapstructure:"HTTP_SERVER_ADDRESS"`
+	AccessTokenDuration  time.Duration `mapstructure:"ACCESS_TOKEN_DURATION"`
+	RefreshTokenDuration time.Duration `mapstructure:"REFRESH_TOKEN_DURATION"`
 }
 
 func LoadConfig(path string) (*Config, error) {

@@ -1,7 +1,6 @@
 package api
 
 import (
-	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/pule1234/VideoForge/global"
 	"github.com/pule1234/VideoForge/internal/processor"
@@ -16,7 +15,6 @@ func (server *Server) generateVideo(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, errorResponse(err))
 		return
 	}
-	fmt.Println("---------")
 	//todo 进行用户认证，从token中获取到用户信息，将用户和视频生成的taskId进行绑定，存储在redis中，方便后续通知对应用户对应的视频已经生成
 	//userId := 0
 	userName := ""
