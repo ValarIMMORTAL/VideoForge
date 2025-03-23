@@ -1,12 +1,12 @@
 package main
 
 import (
-	"context"
 	"github.com/jackc/pgx/v5"
 	"github.com/pule1234/VideoForge/api"
 	"github.com/pule1234/VideoForge/cache"
 	"github.com/pule1234/VideoForge/config"
 	db "github.com/pule1234/VideoForge/db/sqlc"
+	"github.com/pule1234/VideoForge/global"
 	"github.com/pule1234/VideoForge/internal/crawler"
 	"github.com/pule1234/VideoForge/internal/processor"
 	"github.com/pule1234/VideoForge/mq"
@@ -14,8 +14,7 @@ import (
 )
 
 func main() {
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
+	defer global.GlobalCancel()
 	loadConfig, err := config.LoadConfig(".")
 	if err != nil {
 		log.Fatal("cannot load config", err)
@@ -24,7 +23,7 @@ func main() {
 	mq.InitRabbitMQ()
 	cache.InitRedis()
 
-	conn, err := pgx.Connect(ctx, loadConfig.DBSource)
+	conn, err := pgx.Connect(global.GlobalCtx, loadConfig.DBSource)
 
 	if err != nil {
 		log.Fatal("connect postgres err ", err)
@@ -32,7 +31,7 @@ func main() {
 	q := db.New(conn)
 
 	dyCrawler, err := crawler.NewDyCrawler(loadConfig.DouYingQueueName, q)
-	go dyCrawler.Rabbit.ConsumeItem(ctx, processor.CreateCopyWriting, loadConfig.DouYingQueueName, dyCrawler.Postgres)
+	go dyCrawler.Rabbit.ConsumeItem(processor.CreateCopyWriting, loadConfig.DouYingQueueName, dyCrawler.Postgres, global.GlobalCtx)
 	runGinServer(*loadConfig, q)
 }
 

@@ -39,13 +39,16 @@ func GenerateVideo(ctx context.Context, params VideoParams) (string, error) {
 	}
 	go func() {
 		//采用指数回避的方式轮询改接口
-		backoff := 10 * time.Second
-		maxBackoff := 30 * time.Second
+		//backoff := 10 * time.Second
+		//maxBackoff := 30 * time.Second
+		fmt.Println("执行中")
 		for {
 			select {
 			case <-ctx.Done():
+				fmt.Println("协程退出")
 				return
-			case <-time.After(backoff):
+			//case <-time.After(backoff):
+			case <-time.After(10 * time.Second):
 				resp, err := SendGetRequest(taskUrl, conf)
 				if err != nil {
 					log.Println("Generate video failed: " + err.Error())
@@ -60,7 +63,7 @@ func GenerateVideo(ctx context.Context, params VideoParams) (string, error) {
 
 					return
 				}
-				backoff = min(backoff*2, maxBackoff)
+				//backoff = min(backoff*2, maxBackoff)
 			}
 		}
 	}()

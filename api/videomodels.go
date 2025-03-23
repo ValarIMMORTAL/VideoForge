@@ -21,10 +21,10 @@ type generateVideo struct {
 	BgmVolume           float32 `json:"bgm_volume"`
 	SubtitleEnabled     bool    `json:"subtitle_enabled"`
 	SubtitlePosition    string  `json:"subtitle_position"`
-	CustomPosition      string  `json:"custom_position"`
+	CustomPosition      float32 `json:"custom_position"`
 	FontName            string  `json:"font_name"`
 	TextForeColor       string  `json:"text_fore_color"`
-	TextBackgroundColor string  `json:"text_background_color"`
+	TextBackgroundColor bool    `json:"text_background_color"`
 	FontSize            int     `json:"font_size"`
 	StrokeColor         string  `json:"stroke_color"`
 	StrokeWidth         float32 `json:"stroke_color"`
