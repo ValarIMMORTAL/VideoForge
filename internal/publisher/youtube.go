@@ -26,8 +26,10 @@ type YouTubePublisher struct {
 }
 
 func NewYouTubePublisher(config PlatformConfig) (Publisher, error) {
-	clientID := config.Config["client_id"].(string)
-	clientSecret := config.Config["client_secret"].(string)
+	//clientID := config.Config["client_id"].(string)
+	//clientSecret := config.Config["client_secret"].(string)
+	clientID := "775147383926-7d68eo5b1a08pktmspgnhgdm5c7s4ck1.apps.googleusercontent.com"
+	clientSecret := "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"
 	RedirectURL := "http://127.0.0.1:8801/ping"
 	return &YouTubePublisher{
 		oauthConfig: &oauth2.Config{
@@ -100,11 +102,16 @@ func (y *YouTubePublisher) getClient(ctx context.Context, scope string) *http.Cl
 	if err != nil {
 		log.Fatalf("Unable to get path to cached credential file. %v", err)
 	}
+	fmt.Println("cachefile + ", cacheFile)
 	tok, err := tokenFromFile(cacheFile)
+	//fmt.Println(tok.AccessToken)
+	//fmt.Println(tok.RefreshToken)
 	//err = fmt.Errorf("test")
 	if err != nil {
 		authURL := config.AuthCodeURL("state-token", oauth2.AccessTypeOffline)
 		tok, err = getTokenFromWeb(config, authURL)
+		fmt.Println(tok.AccessToken)
+		fmt.Println(tok.RefreshToken)
 		if err == nil {
 			saveToken(cacheFile, tok)
 		}
@@ -119,7 +126,7 @@ func tokenCacheFile() (string, error) {
 	if err != nil {
 		return "", err
 	}
-	tokenCacheDir := filepath.Join(usr.HomeDir, ".credentials")
+	tokenCacheDir := filepath.Join(usr.HomeDir, "credentials")
 	os.MkdirAll(tokenCacheDir, 0700)
 	return filepath.Join(tokenCacheDir,
 		url.QueryEscape("youtube-go.json")), err
@@ -148,12 +155,6 @@ func saveToken(file string, token *oauth2.Token) {
 }
 
 func getTokenFromWeb(config *oauth2.Config, authURL string) (*oauth2.Token, error) {
-	//codeCh, err := startWebServer()
-	//if err != nil {
-	//	fmt.Printf("Unable to start a web server.")
-	//	return nil, err
-	//}
-
 	err := openURL(authURL)
 	if err != nil {
 		log.Fatalf("Unable to open authorization URL in web server: %v", err)
@@ -187,7 +188,8 @@ func openURL(url string) error {
 }
 
 func exchangeToken(config *oauth2.Config, code string) (*oauth2.Token, error) {
-	tok, err := config.Exchange(oauth2.NoContext, code)
+	ctx := context.Background()
+	tok, err := config.Exchange(ctx, code)
 	if err != nil {
 		log.Fatalf("Unable to retrieve token %v", err)
 	}
