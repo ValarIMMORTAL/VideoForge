@@ -9,6 +9,7 @@ import (
 	"github.com/pule1234/VideoForge/global"
 	"github.com/pule1234/VideoForge/internal/crawler"
 	"github.com/pule1234/VideoForge/internal/processor"
+	"github.com/pule1234/VideoForge/internal/publisher"
 	"github.com/pule1234/VideoForge/mq"
 	"log"
 )
@@ -22,6 +23,8 @@ func main() {
 
 	mq.InitRabbitMQ()
 	cache.InitRedis()
+	// 初始化 Publisher 工厂
+	factory := publisher.NewPublisherFactory()
 
 	conn, err := pgx.Connect(global.GlobalCtx, loadConfig.DBSource)
 
@@ -32,11 +35,11 @@ func main() {
 
 	dyCrawler, err := crawler.NewDyCrawler(loadConfig.DouYingQueueName, q)
 	go dyCrawler.Rabbit.ConsumeItem(processor.CreateCopyWriting, loadConfig.DouYingQueueName, dyCrawler.Postgres, global.GlobalCtx)
-	runGinServer(*loadConfig, q)
+	runGinServer(*loadConfig, q, factory)
 }
 
-func runGinServer(config config.Config, store db.Store) {
-	server, err := api.NewServer(config, store)
+func runGinServer(config config.Config, store db.Store, factory *publisher.PublisherFactory) {
+	server, err := api.NewServer(config, store, factory)
 	if err != nil {
 		log.Fatal("cannot create GIN server", err)
 	}

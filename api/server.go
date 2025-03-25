@@ -5,25 +5,27 @@ import (
 	"github.com/pule1234/VideoForge/cache"
 	"github.com/pule1234/VideoForge/config"
 	db "github.com/pule1234/VideoForge/db/sqlc"
+	"github.com/pule1234/VideoForge/internal/publisher"
 	"github.com/pule1234/VideoForge/token"
-	"net/http"
 )
 
 type Server struct {
 	config config.Config //读取文件配置
 	store  db.Store
 	//tokenMaker token.Maker
-	router     *gin.Engine
-	redis      *cache.Redis
-	tokenMaker token.Maker
+	router           *gin.Engine
+	redis            *cache.Redis
+	tokenMaker       token.Maker
+	publisherFactory *publisher.PublisherFactory
 }
 
-func NewServer(conf config.Config, store db.Store) (*Server, error) {
+func NewServer(conf config.Config, store db.Store, factory *publisher.PublisherFactory) (*Server, error) {
 	server := &Server{
-		config: conf,
-		store:  store,
-		router: gin.Default(),
-		redis:  cache.RedisClient,
+		config:           conf,
+		store:            store,
+		router:           gin.Default(),
+		redis:            cache.RedisClient,
+		publisherFactory: factory,
 	}
 	server.setupRouter()
 
@@ -38,11 +40,9 @@ func (server *Server) setupRouter() {
 	//加入token
 
 	router.POST("/generateVideo", server.generateVideo)
-	router.GET("/ping", func(c *gin.Context) {
-		c.JSON(http.StatusOK, gin.H{
-			"message": "pong",
-		})
-	})
+	router.GET("/ping", server.callback)
+
+	router.POST("/upload-video", server.UploadVideo)
 	server.router = router
 }
 
