@@ -9,7 +9,6 @@ import (
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/google"
 	"io/ioutil"
-	"log"
 	"net"
 	"net/http"
 	"net/url"
@@ -21,30 +20,33 @@ import (
 	"time"
 )
 
-func getClient(ctx context.Context, scope string) *http.Client {
+func getClient(ctx context.Context, scope string) (*http.Client, error) {
 	b, err := ioutil.ReadFile("client_secret.json")
 	if err != nil {
-		log.Fatalf("Unable to read client secret file: %v", err)
+		return nil, fmt.Errorf("Unable to read client secret file: %v", err)
 	}
 
 	config, err := google.ConfigFromJSON(b, scope)
 	if err != nil {
-		log.Fatalf("Unable to parse client secret file to config: %v", err)
+		return nil, fmt.Errorf("Unable to parse client secret file to config: %v", err)
 	}
 
 	cacheFile, err := tokenCacheFile()
 	if err != nil {
-		log.Fatalf("Unable to get path to cached credential file. %v", err)
+		return nil, fmt.Errorf("Unable to get path to cached credential file. %v", err)
 	}
 	tok, err := tokenFromFile(cacheFile)
 	if err != nil { //获取缓存的token失败
 		authURL := config.AuthCodeURL("state-token", oauth2.AccessTypeOffline, oauth2.ApprovalForce)
 		tok, err = getTokenFromWeb(config, authURL)
 		if err == nil {
-			saveToken(cacheFile, tok)
+			err = saveToken(cacheFile, tok)
+			if err != nil {
+				return nil, err
+			}
 		}
 	}
-	return config.Client(ctx, tok)
+	return config.Client(ctx, tok), nil
 }
 
 // tokenCacheFile生成凭证文件路径/filename。
@@ -127,20 +129,24 @@ func readAndDecodeToken(file string) (*oauth2.Token, error) {
 	return &token, nil
 }
 
-func saveToken(file string, token *oauth2.Token) {
+func saveToken(file string, token *oauth2.Token) error {
 	f, err := os.OpenFile(file, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0600)
 	if err != nil {
-		log.Fatalf("Unable to cache oauth token: %v", err)
+		return fmt.Errorf("Unable to cache oauth token: %v", err)
 	}
 	defer f.Close()
 	// todo 返回存储错误
-	json.NewEncoder(f).Encode(token)
+	err = json.NewEncoder(f).Encode(token)
+	if err != nil {
+		return fmt.Errorf("存储Token失败 %w", err)
+	}
+	return nil
 }
 
 func getTokenFromWeb(config *oauth2.Config, authURL string) (*oauth2.Token, error) {
 	err := openURL(authURL)
 	if err != nil {
-		log.Fatalf("Unable to open authorization URL in web server: %v", err)
+		return nil, fmt.Errorf("Unable to open authorization URL in web server: %v", err)
 	} else {
 		fmt.Println("Your browser has been opened to an authorization URL.",
 			" This program will resume once authorization has been provided.")
@@ -174,7 +180,7 @@ func exchangeToken(config *oauth2.Config, code string) (*oauth2.Token, error) {
 	ctx := context.Background()
 	tok, err := config.Exchange(ctx, code)
 	if err != nil {
-		log.Fatalf("Unable to retrieve token %v", err)
+		return nil, fmt.Errorf("Unable to retrieve token %v", err)
 	}
 	return tok, nil
 }
@@ -238,6 +244,9 @@ func newAccessToken(refreToken string, cacheFile string) error {
 	if err != nil {
 		return nil
 	}
-	saveToken(cacheFile, tk)
+	err = saveToken(cacheFile, tk)
+	if err != nil {
+		return err
+	}
 	return nil
 }
