@@ -15,11 +15,13 @@ type YouTubePublisher struct {
 }
 
 func NewYouTubePublisher(config PlatformConfig) (Publisher, error) {
-	//clientID := config.Config["client_id"].(string)
-	//clientSecret := config.Config["client_secret"].(string)
-	clientID := "775147383926-7d68eo5b1a08pktmspgnhgdm5c7s4ck1.apps.googleusercontent.com"
-	clientSecret := "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"
-	RedirectURL := "http://127.0.0.1:8801/ping"
+	clientID := config.Config["client_id"].(string)
+	clientSecret := config.Config["client_secret"].(string)
+	uris, ok := config.Config["redirect_uris"].([]interface{})
+	if !ok || len(uris) == 0 {
+		log.Fatal("redirect_uris is not a slice or is empty")
+	}
+	RedirectURL, ok := uris[0].(string)
 	return &YouTubePublisher{
 		oauthConfig: &oauth2.Config{
 			ClientID:     clientID,
