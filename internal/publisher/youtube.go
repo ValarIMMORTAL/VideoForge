@@ -2,7 +2,6 @@ package publisher
 
 import (
 	"context"
-	"fmt"
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/google"
 	"google.golang.org/api/youtube/v3"
@@ -33,7 +32,10 @@ func NewYouTubePublisher(config PlatformConfig) (Publisher, error) {
 }
 
 func (y *YouTubePublisher) UploadVideo(ctx context.Context, filePath, title, description, keywords string) (string, error) {
-	client := getClient(ctx, youtube.YoutubeUploadScope)
+	client, err := getClient(ctx, youtube.YoutubeUploadScope)
+	if err != nil {
+		return "", err
+	}
 	service, err := youtube.New(client)
 	if err != nil {
 		log.Fatalf("Error creating YouTube client: %v", err)
@@ -75,27 +77,4 @@ func (y *YouTubePublisher) Platform() string {
 // 获取回掉地址
 func (y *YouTubePublisher) GetAuthURL() string {
 	return y.oauthConfig.AuthCodeURL("state-token", oauth2.AccessTypeOffline)
-}
-
-func (y *YouTubePublisher) RefrePlatformToken() error {
-	cacheFile, err := tokenCacheFile()
-	if err != nil {
-		return fmt.Errorf("Unable to get path to cached credential file. %v", err)
-	}
-	tok, err := tokenFromFile(cacheFile)
-	if err != nil {
-		return fmt.Errorf("cacheFile not exit")
-	}
-	conf, err := newConf()
-	if err != nil {
-		return err
-	}
-	tkr := conf.TokenSource(context.Background(), &oauth2.Token{RefreshToken: tok.RefreshToken})
-	tk, err := tkr.Token()
-	if err != nil {
-		return err
-	}
-
-	saveToken(cacheFile, tk)
-	return nil
 }
