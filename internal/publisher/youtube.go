@@ -2,22 +2,12 @@ package publisher
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
-	"github.com/pule1234/VideoForge/global"
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/google"
 	"google.golang.org/api/youtube/v3"
-	"io/ioutil"
 	"log"
-	"net"
-	"net/http"
-	"net/url"
 	"os"
-	"os/exec"
-	"os/user"
-	"path/filepath"
-	"runtime"
 	"strings"
 )
 
@@ -43,7 +33,7 @@ func NewYouTubePublisher(config PlatformConfig) (Publisher, error) {
 }
 
 func (y *YouTubePublisher) UploadVideo(ctx context.Context, filePath, title, description, keywords string) (string, error) {
-	client := y.getClient(ctx, youtube.YoutubeUploadScope)
+	client := getClient(ctx, youtube.YoutubeUploadScope)
 	service, err := youtube.New(client)
 	if err != nil {
 		log.Fatalf("Error creating YouTube client: %v", err)
@@ -87,130 +77,25 @@ func (y *YouTubePublisher) GetAuthURL() string {
 	return y.oauthConfig.AuthCodeURL("state-token", oauth2.AccessTypeOffline)
 }
 
-func (y *YouTubePublisher) getClient(ctx context.Context, scope string) *http.Client {
-	b, err := ioutil.ReadFile("client_secret.json")
-	if err != nil {
-		log.Fatalf("Unable to read client secret file: %v", err)
-	}
-
-	config, err := google.ConfigFromJSON(b, scope)
-	if err != nil {
-		log.Fatalf("Unable to parse client secret file to config: %v", err)
-	}
-
+func (y *YouTubePublisher) RefrePlatformToken() error {
 	cacheFile, err := tokenCacheFile()
 	if err != nil {
-		log.Fatalf("Unable to get path to cached credential file. %v", err)
+		return fmt.Errorf("Unable to get path to cached credential file. %v", err)
 	}
-	fmt.Println("cachefile + ", cacheFile)
 	tok, err := tokenFromFile(cacheFile)
-	//fmt.Println(tok.AccessToken)
-	//fmt.Println(tok.RefreshToken)
-	//err = fmt.Errorf("test")
 	if err != nil {
-		authURL := config.AuthCodeURL("state-token", oauth2.AccessTypeOffline)
-		tok, err = getTokenFromWeb(config, authURL)
-		fmt.Println(tok.AccessToken)
-		fmt.Println(tok.RefreshToken)
-		if err == nil {
-			saveToken(cacheFile, tok)
-		}
+		return fmt.Errorf("cacheFile not exit")
 	}
-	return config.Client(ctx, tok)
-}
-
-// tokenCacheFile生成凭证文件路径/filename。
-// 返回生成的凭证路径/文件名。
-func tokenCacheFile() (string, error) {
-	usr, err := user.Current()
+	conf, err := newConf()
 	if err != nil {
-		return "", err
+		return err
 	}
-	tokenCacheDir := filepath.Join(usr.HomeDir, "credentials")
-	os.MkdirAll(tokenCacheDir, 0700)
-	return filepath.Join(tokenCacheDir,
-		url.QueryEscape("youtube-go.json")), err
-}
-
-// tokenFromFile从给定的文件路径中获取Token。
-// 返回检索到的Token和遇到的任何读取错误。
-func tokenFromFile(file string) (*oauth2.Token, error) {
-	f, err := os.Open(file)
+	tkr := conf.TokenSource(context.Background(), &oauth2.Token{RefreshToken: tok.RefreshToken})
+	tk, err := tkr.Token()
 	if err != nil {
-		return nil, err
-	}
-	t := &oauth2.Token{}
-	err = json.NewDecoder(f).Decode(t)
-	defer f.Close()
-	return t, err
-}
-
-func saveToken(file string, token *oauth2.Token) {
-	f, err := os.OpenFile(file, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0600)
-	if err != nil {
-		log.Fatalf("Unable to cache oauth token: %v", err)
-	}
-	defer f.Close()
-	json.NewEncoder(f).Encode(token)
-}
-
-func getTokenFromWeb(config *oauth2.Config, authURL string) (*oauth2.Token, error) {
-	err := openURL(authURL)
-	if err != nil {
-		log.Fatalf("Unable to open authorization URL in web server: %v", err)
-	} else {
-		fmt.Println("Your browser has been opened to an authorization URL.",
-			" This program will resume once authorization has been provided.\n")
-		fmt.Println(authURL)
+		return err
 	}
 
-	// Wait for the web server to get the code.
-	fmt.Println("阻塞")
-	//code := <-codeCh
-	code := <-global.OauthCodeChan
-	fmt.Println("code :" + code)
-	return exchangeToken(config, code)
-}
-
-func openURL(url string) error {
-	var err error
-	switch runtime.GOOS {
-	case "linux":
-		err = exec.Command("xdg-open", url).Start()
-	case "windows":
-		err = exec.Command("rundll32", "url.dll,FileProtocolHandler", "http://localhost:4001/").Start()
-	case "darwin":
-		err = exec.Command("open", url).Start()
-	default:
-		err = fmt.Errorf("Cannot open URL %s on this platform", url)
-	}
-	return err
-}
-
-func exchangeToken(config *oauth2.Config, code string) (*oauth2.Token, error) {
-	ctx := context.Background()
-	tok, err := config.Exchange(ctx, code)
-	if err != nil {
-		log.Fatalf("Unable to retrieve token %v", err)
-	}
-	return tok, nil
-}
-
-func startWebServer() (codeCh chan string, err error) {
-	listener, err := net.Listen("tcp", "localhost:8090")
-	if err != nil {
-		return nil, err
-	}
-	codeCh = make(chan string)
-
-	go http.Serve(listener, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		code := r.FormValue("code")
-		codeCh <- code // send code to OAuth flow
-		listener.Close()
-		w.Header().Set("Content-Type", "text/plain")
-		fmt.Fprintf(w, "Received code: %v\r\nYou can now safely close this browser window.", code)
-	}))
-
-	fmt.Println("临时服务器启动")
-	return codeCh, nil
+	saveToken(cacheFile, tk)
+	return nil
 }
