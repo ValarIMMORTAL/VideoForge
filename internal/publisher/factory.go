@@ -1,6 +1,11 @@
 package publisher
 
-import "fmt"
+import (
+	"context"
+	"encoding/json"
+	"fmt"
+	db "github.com/pule1234/VideoForge/db/sqlc"
+)
 
 type PlatformConfig struct {
 	Platform string                 //平台名称
@@ -11,9 +16,9 @@ type PublisherFactory struct {
 	platformConfigs map[string]PlatformConfig
 }
 
-func NewPublisherFactory() *PublisherFactory {
+func NewPublisherFactory(store db.Store) *PublisherFactory {
 	return &PublisherFactory{
-		platformConfigs: loadPlatformConfigs(), //查询所有平台的配置
+		platformConfigs: loadPlatformConfigs(store), //查询所有平台的配置
 	}
 }
 
@@ -31,8 +36,25 @@ func (f *PublisherFactory) CreatePublisher(platformName string) (Publisher, erro
 }
 
 // 查询所有平台的配置
-func loadPlatformConfigs() map[string]PlatformConfig {
-	return map[string]PlatformConfig{
-		"youtube": PlatformConfig{},
+func loadPlatformConfigs(store db.Store) map[string]PlatformConfig {
+	platforms, err := store.GetPlatforms(context.Background())
+	if err != nil {
+		fmt.Println(err)
+		return nil
 	}
+	platformConfigs := map[string]PlatformConfig{}
+	for _, platform := range platforms {
+		var temp map[string]interface{}
+		err = json.Unmarshal([]byte(platform.Detail), &temp)
+		if err != nil {
+			fmt.Println("JSON 解析失败:", err)
+			return nil
+		}
+		platformConfigs[platform.Platform] = PlatformConfig{
+			Platform: platform.Platform,
+			Config:   temp,
+		}
+	}
+
+	return platformConfigs
 }

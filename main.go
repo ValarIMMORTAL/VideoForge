@@ -23,8 +23,6 @@ func main() {
 
 	mq.InitRabbitMQ()
 	cache.InitRedis()
-	// 初始化 Publisher 工厂
-	factory := publisher.NewPublisherFactory()
 
 	conn, err := pgx.Connect(global.GlobalCtx, loadConfig.DBSource)
 
@@ -32,7 +30,8 @@ func main() {
 		log.Fatal("connect postgres err ", err)
 	}
 	q := db.New(conn)
-
+	// 初始化 Publisher 工厂
+	factory := publisher.NewPublisherFactory(q)
 	dyCrawler, err := crawler.NewDyCrawler(loadConfig.DouYingQueueName, q)
 	go dyCrawler.Rabbit.ConsumeItem(processor.CreateCopyWriting, loadConfig.DouYingQueueName, dyCrawler.Postgres, global.GlobalCtx)
 	runGinServer(*loadConfig, q, factory)

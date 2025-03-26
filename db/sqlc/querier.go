@@ -17,6 +17,8 @@ type Querier interface {
 	CreateUser(ctx context.Context, arg CreateUserParams) (User, error)
 	DeleteCopy(ctx context.Context, arg DeleteCopyParams) error
 	GetCopy(ctx context.Context, id int64) (Copywriting, error)
+	GetPlatforms(ctx context.Context) ([]GetPlatformsRow, error)
+	GetPlatformsByName(ctx context.Context, platform string) (GetPlatformsByNameRow, error)
 	GetSession(ctx context.Context, id uuid.UUID) (Session, error)
 	GetUser(ctx context.Context, id int32) (User, error)
 	GetUserByName(ctx context.Context, username string) (User, error)

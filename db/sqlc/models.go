@@ -21,6 +21,14 @@ type Copywriting struct {
 	DeleteAt  pgtype.Timestamp `json:"delete_at"`
 }
 
+type Platform struct {
+	ID        int64            `json:"id"`
+	Platform  string           `json:"platform"`
+	Detail    string           `json:"detail"`
+	CreatedAt time.Time        `json:"created_at"`
+	DeleteAt  pgtype.Timestamp `json:"delete_at"`
+}
+
 type Session struct {
 	ID           uuid.UUID `json:"id"`
 	UserID       int32     `json:"user_id"`
