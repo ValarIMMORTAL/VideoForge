@@ -37,6 +37,7 @@ func (server *Server) setupRouter() {
 	//todo route定义
 	router.POST("/users", server.createUser)
 	router.POST("/users/login", server.loginUser)
+	router.POST("/tokens/renew_access", server.renewAccessToken)
 	//加入token
 
 	router.POST("/generateVideo", server.generateVideo)
