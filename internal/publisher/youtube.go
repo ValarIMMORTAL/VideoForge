@@ -33,8 +33,8 @@ func NewYouTubePublisher(config PlatformConfig) (Publisher, error) {
 	}, nil
 }
 
-func (y *YouTubePublisher) UploadVideo(ctx context.Context, filePath, title, description, keywords string) (string, error) {
-	client, err := getClient(ctx, youtube.YoutubeUploadScope)
+func (y *YouTubePublisher) UploadVideo(ctx context.Context, filePath, title, description, keywords string, userId int) (string, error) {
+	client, err := getClient(ctx, youtube.YoutubeUploadScope, userId)
 	if err != nil {
 		return "", err
 	}

@@ -20,7 +20,7 @@ import (
 	"time"
 )
 
-func getClient(ctx context.Context, scope string) (*http.Client, error) {
+func getClient(ctx context.Context, scope string, userId int) (*http.Client, error) {
 	b, err := ioutil.ReadFile("client_secret.json")
 	if err != nil {
 		return nil, fmt.Errorf("Unable to read client secret file: %v", err)
@@ -31,6 +31,7 @@ func getClient(ctx context.Context, scope string) (*http.Client, error) {
 		return nil, fmt.Errorf("Unable to parse client secret file to config: %v", err)
 	}
 
+	//todo 切换成通过scope、userId从数据库中获取token
 	cacheFile, err := tokenCacheFile()
 	if err != nil {
 		return nil, fmt.Errorf("Unable to get path to cached credential file. %v", err)
@@ -40,6 +41,7 @@ func getClient(ctx context.Context, scope string) (*http.Client, error) {
 		authURL := config.AuthCodeURL("state-token", oauth2.AccessTypeOffline, oauth2.ApprovalForce)
 		tok, err = getTokenFromWeb(config, authURL)
 		if err == nil {
+			//todo 将token存储在数据库中
 			err = saveToken(cacheFile, tok)
 			if err != nil {
 				return nil, err

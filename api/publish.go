@@ -47,7 +47,8 @@ func (server *Server) UploadVideo(c *gin.Context) {
 	defer os.Remove(tempFilePath)
 
 	// 4. 调用 Publisher 上传
-	videoID, err := publisher.UploadVideo(c.Request.Context(), tempFilePath, title, description, "keyword")
+	userId, _ := c.Get(authorizationPayloadKey)
+	videoID, err := publisher.UploadVideo(c.Request.Context(), tempFilePath, title, description, "keyword", userId)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "上传失败: " + err.Error()})
 		return
