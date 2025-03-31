@@ -22,7 +22,7 @@ import (
 	"time"
 )
 
-func getClient(ctx context.Context, scope string, userId int32, store db.Store) (*http.Client, error) {
+func getClient(ctx context.Context, scope string, userId int64, store db.Store) (*http.Client, error) {
 	b, err := ioutil.ReadFile("client_secret.json")
 	if err != nil {
 		return nil, fmt.Errorf("Unable to read client secret file: %v", err)
@@ -33,7 +33,6 @@ func getClient(ctx context.Context, scope string, userId int32, store db.Store) 
 		return nil, fmt.Errorf("Unable to parse client secret file to config: %v", err)
 	}
 
-	//todo 切换成通过scope、userId从数据库中获取token 若当前数据库中不存在对应的token则需要进行oauth2认证
 	token, err := tokenFromDb(ctx, userId, scope, store)
 	var tok *oauth2.Token
 	if err != nil { //获取数据失败
@@ -41,7 +40,6 @@ func getClient(ctx context.Context, scope string, userId int32, store db.Store) 
 		authURL := config.AuthCodeURL("state-token", oauth2.AccessTypeOffline, oauth2.ApprovalForce)
 		tok, err = getTokenFromWeb(config, authURL)
 		if err == nil {
-			//todo 将token存储在数据库中
 			err = saveToken(ctx, tok, userId, scope, store)
 			if err != nil {
 				return nil, err
@@ -71,7 +69,7 @@ func tokenCacheFile() (string, error) {
 		url.QueryEscape("youtube-go.json")), err
 }
 
-func tokenFromDb(ctx context.Context, userId int32, scope string, store db.Store) (db.GetOauth2TokenRow, error) {
+func tokenFromDb(ctx context.Context, userId int64, scope string, store db.Store) (db.GetOauth2TokenRow, error) {
 	arg := db.GetOauth2TokenParams{
 		UserID:   userId,
 		Provider: "Google",
@@ -152,7 +150,7 @@ func readAndDecodeToken(file string) (*oauth2.Token, error) {
 	return &token, nil
 }
 
-func saveToken(ctx context.Context, tok *oauth2.Token, userId int32, scope string, store db.Store) error {
+func saveToken(ctx context.Context, tok *oauth2.Token, userId int64, scope string, store db.Store) error {
 	insertArg := db.InsertOauth2TokenParams{
 		UserID:       userId,
 		Provider:     "Google",
@@ -263,7 +261,7 @@ func newConf() (*oauth2.Config, error) {
 	}, nil
 }
 
-func newAccessToken(ctx context.Context, refreToken string, userId int32, scope string, store db.Store) error {
+func newAccessToken(ctx context.Context, refreToken string, userId int64, scope string, store db.Store) error {
 	conf, _ := newConf()
 	tkr := conf.TokenSource(context.Background(), &oauth2.Token{RefreshToken: refreToken})
 	tk, err := tkr.Token()

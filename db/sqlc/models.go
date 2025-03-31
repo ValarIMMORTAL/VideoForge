@@ -23,7 +23,7 @@ type Copywriting struct {
 
 type Oauth2Token struct {
 	ID           int64            `json:"id"`
-	UserID       int32            `json:"user_id"`
+	UserID       int64            `json:"user_id"`
 	Provider     string           `json:"provider"`
 	Api          string           `json:"api"`
 	AccessToken  string           `json:"access_token"`
@@ -44,7 +44,7 @@ type Platform struct {
 
 type Session struct {
 	ID           uuid.UUID `json:"id"`
-	UserID       int32     `json:"user_id"`
+	UserID       int64     `json:"user_id"`
 	RefreshToken string    `json:"refresh_token"`
 	UserAgent    string    `json:"user_agent"`
 	ClientIp     string    `json:"client_ip"`
@@ -54,9 +54,19 @@ type Session struct {
 }
 
 type User struct {
-	ID             int32     `json:"id"`
+	ID             int64     `json:"id"`
 	Username       string    `json:"username"`
 	HashedPassword string    `json:"hashed_password"`
 	Email          string    `json:"email"`
 	CreatedAt      time.Time `json:"created_at"`
+}
+
+type Video struct {
+	ID        int64            `json:"id"`
+	Title     string           `json:"title"`
+	Url       string           `json:"url"`
+	Duration  int32            `json:"duration"`
+	UserID    int64            `json:"user_id"`
+	CreatedAt time.Time        `json:"created_at"`
+	DeleteAt  pgtype.Timestamp `json:"delete_at"`
 }

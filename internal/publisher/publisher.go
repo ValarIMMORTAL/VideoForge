@@ -6,7 +6,7 @@ import (
 )
 
 type Publisher interface {
-	UploadVideo(ctx context.Context, filePath, title, description, keywords string, userId int32, store db.Store) (string, error)
+	UploadVideo(ctx context.Context, filePath, title, description, keywords string, userId int64, store db.Store) (string, error)
 	Platform() string // 获取平台名称
 	//RefrePlatformToken() error
 }

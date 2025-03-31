@@ -15,13 +15,13 @@ var (
 // 存储token中的有效数据
 type Payload struct {
 	ID        uuid.UUID `json:"id"`
-	UserId    int32     `json:"user_id"`
+	UserId    int64     `json:"user_id"`
 	Username  string    `json:"username"`
 	IssuedAt  time.Time `json:"issued_at"`  // 创建时间
 	ExpiredAt time.Time `json:"expired_at"` //过期时间
 }
 
-func NewPayload(userId int32, username string, duration time.Duration) (*Payload, error) {
+func NewPayload(userId int64, username string, duration time.Duration) (*Payload, error) {
 	tokenID, err := uuid.NewRandom()
 	if err != nil {
 		return nil, err

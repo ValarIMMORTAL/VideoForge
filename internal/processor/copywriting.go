@@ -41,37 +41,12 @@ func CreateCopyWriting(items []models.TrendingItem, dbStore *db.Queries) error {
 			},
 		}
 
-		// todo 调用api逻辑替换为SendRequest
 		allResp, err := SendPostRequest(requestData, url, conf)
 		if err != nil {
-			//todo 日志
+			log.Println("createCopyWriting request failed: ", err)
 			return err
 		}
 
-		//jsonRequest, _ := json.Marshal(requestData)
-		//payload := strings.NewReader(string(jsonRequest))
-		//
-		//client := &http.Client{}
-		//req, err := http.NewRequest(method, url, payload)
-		//if err != nil {
-		//	return errors.New("failed to create copywriting request : " + err.Error())
-		//}
-		//
-		//req.Header.Add("Authorization", conf.ApiKey)
-		//req.Header.Add("Content-Type", "application/json")
-		//res, err := client.Do(req)
-		//if err != nil {
-		//	return errors.New("failed to push copywriting request: " + err.Error())
-		//}
-		//
-		//if res.StatusCode != 200 {
-		//	return errors.New("failed to push copywriting request: HTTP code " + strconv.Itoa(res.StatusCode))
-		//}
-		//
-		//allResp, err := ioutil.ReadAll(res.Body)
-		//if err != nil {
-		//	return err
-		//}
 		//将返回的数据写入到日志
 		log.Println(item.Source + " copy is :" + string(allResp))
 

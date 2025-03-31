@@ -1,6 +1,6 @@
 CREATE TABLE "oauth2_tokens" (
                                  "id" BIGSERIAL PRIMARY KEY,
-                                 "user_id" integer NOT NULL,
+                                 "user_id" BIGINT NOT NULL,
                                  "provider" varchar NOT NULL,
                                  "api" varchar NOT NULL,
                                  "access_token" text NOT NULL,
