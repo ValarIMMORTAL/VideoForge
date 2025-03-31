@@ -5,10 +5,12 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	db "github.com/pule1234/VideoForge/db/sqlc"
 	"github.com/pule1234/VideoForge/global"
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/google"
 	"io/ioutil"
+	"log"
 	"net"
 	"net/http"
 	"net/url"
@@ -20,7 +22,7 @@ import (
 	"time"
 )
 
-func getClient(ctx context.Context, scope string) (*http.Client, error) {
+func getClient(ctx context.Context, scope string, userId int32, store db.Store) (*http.Client, error) {
 	b, err := ioutil.ReadFile("client_secret.json")
 	if err != nil {
 		return nil, fmt.Errorf("Unable to read client secret file: %v", err)
@@ -31,19 +33,26 @@ func getClient(ctx context.Context, scope string) (*http.Client, error) {
 		return nil, fmt.Errorf("Unable to parse client secret file to config: %v", err)
 	}
 
-	cacheFile, err := tokenCacheFile()
-	if err != nil {
-		return nil, fmt.Errorf("Unable to get path to cached credential file. %v", err)
-	}
-	tok, err := tokenFromFile(cacheFile)
-	if err != nil { //获取缓存的token失败
+	//todo 切换成通过scope、userId从数据库中获取token 若当前数据库中不存在对应的token则需要进行oauth2认证
+	token, err := tokenFromDb(ctx, userId, scope, store)
+	var tok *oauth2.Token
+	if err != nil { //获取数据失败
+		log.Println("获取预存储的token失败 :" + err.Error())
 		authURL := config.AuthCodeURL("state-token", oauth2.AccessTypeOffline, oauth2.ApprovalForce)
 		tok, err = getTokenFromWeb(config, authURL)
 		if err == nil {
-			err = saveToken(cacheFile, tok)
+			//todo 将token存储在数据库中
+			err = saveToken(ctx, tok, userId, scope, store)
 			if err != nil {
 				return nil, err
 			}
+		}
+	} else {
+		tok = &oauth2.Token{
+			AccessToken:  token.AccessToken,
+			TokenType:    token.TokenType,
+			RefreshToken: token.RefreshToken,
+			Expiry:       token.Expiry,
 		}
 	}
 	return config.Client(ctx, tok), nil
@@ -62,51 +71,65 @@ func tokenCacheFile() (string, error) {
 		url.QueryEscape("youtube-go.json")), err
 }
 
-// 获取存储的token信息
-// 同时判断accessoken是否过期，当accesstoken过期则使用
-func tokenFromFile(file string) (*oauth2.Token, error) {
-	//f, err := os.Open(file)
-	//defer f.Close()
-	//if err != nil {
-	//	return nil, err
-	//}
-	//token := &oauth2.Token{}
-	//err = json.NewDecoder(f).Decode(token)
-	//
-	//t := token.Expiry
-	////过期则刷行accesstoken
-	//if t.Unix() < time.Now().Unix() {
-	//	err = newAccessToken(token.RefreshToken, file)
-	//	f, err = os.Open(file)
-	//	err = json.NewDecoder(f).Decode(token)
-	//}
-	//return token, err
-
-	token, err := readAndDecodeToken(file)
-	if err != nil {
-		return nil, err
+func tokenFromDb(ctx context.Context, userId int32, scope string, store db.Store) (db.GetOauth2TokenRow, error) {
+	arg := db.GetOauth2TokenParams{
+		UserID:   userId,
+		Provider: "Google",
+		Api:      scope,
 	}
-
-	// 检查令牌是否过期（带30秒缓冲）
+	token, err := store.GetOauth2Token(ctx, arg)
+	if err != nil {
+		return db.GetOauth2TokenRow{}, err
+	}
+	// 验证token是否过期
 	if token.Expiry.Add(-30 * time.Second).Before(time.Now()) {
 		// 使用现有refreshToken函数刷新令牌
-		if err := newAccessToken(token.RefreshToken, file); err != nil {
-			return nil, fmt.Errorf("刷新令牌失败: %w", err)
+		if err := newAccessToken(ctx, token.RefreshToken, userId, scope, store); err != nil {
+			return db.GetOauth2TokenRow{}, fmt.Errorf("刷新令牌失败: %w", err)
 		}
 
-		// 重新读取令牌文件
-		token, err = readAndDecodeToken(file)
+		// 重新读取令牌
+		token, err = store.GetOauth2Token(ctx, arg)
 		if err != nil {
-			return nil, err
+			return db.GetOauth2TokenRow{}, err
 		}
 
 		// 检查刷新后的令牌
 		if token.Expiry.Before(time.Now()) {
-			return nil, errors.New("刷新后的令牌仍然过期")
+			return db.GetOauth2TokenRow{}, errors.New("刷新后的令牌仍然过期")
 		}
 	}
 	return token, nil
 }
+
+// 获取存储的token信息
+// 同时判断accessoken是否过期，当accesstoken过期则使用
+//func tokenFromFile(file string) (*oauth2.Token, error) {
+//	token, err := readAndDecodeToken(file)
+//	if err != nil {
+//		return nil, err
+//	}
+//
+//	// 检查令牌是否过期（带30秒缓冲）
+//	if token.Expiry.Add(-30 * time.Second).Before(time.Now()) {
+//		// 使用现有refreshToken函数刷新令牌
+//		if err := newAccessToken(token.RefreshToken, file); err != nil {
+//			return nil, fmt.Errorf("刷新令牌失败: %w", err)
+//		}
+//
+//		// 重新读取令牌文件
+//		token, err = readAndDecodeToken(file)
+//		if err != nil {
+//			return nil, err
+//		}
+//
+//		// 检查刷新后的令牌
+//		if token.Expiry.Before(time.Now()) {
+//			return nil, errors.New("刷新后的令牌仍然过期")
+//		}
+//	}
+//	return token, nil
+//}
 
 // 读取并解码令牌文件
 func readAndDecodeToken(file string) (*oauth2.Token, error) {
@@ -129,16 +152,19 @@ func readAndDecodeToken(file string) (*oauth2.Token, error) {
 	return &token, nil
 }
 
-func saveToken(file string, token *oauth2.Token) error {
-	f, err := os.OpenFile(file, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0600)
-	if err != nil {
-		return fmt.Errorf("Unable to cache oauth token: %v", err)
+func saveToken(ctx context.Context, tok *oauth2.Token, userId int32, scope string, store db.Store) error {
+	insertArg := db.InsertOauth2TokenParams{
+		UserID:       userId,
+		Provider:     "Google",
+		Api:          scope,
+		AccessToken:  tok.AccessToken,
+		TokenType:    tok.TokenType,
+		RefreshToken: tok.RefreshToken,
+		Expiry:       tok.Expiry,
 	}
-	defer f.Close()
-	// todo 返回存储错误
-	err = json.NewEncoder(f).Encode(token)
+	_, err := store.InsertOauth2Token(ctx, insertArg)
 	if err != nil {
-		return fmt.Errorf("存储Token失败 %w", err)
+		return err
 	}
 	return nil
 }
@@ -237,14 +263,24 @@ func newConf() (*oauth2.Config, error) {
 	}, nil
 }
 
-func newAccessToken(refreToken string, cacheFile string) error {
+func newAccessToken(ctx context.Context, refreToken string, userId int32, scope string, store db.Store) error {
 	conf, _ := newConf()
 	tkr := conf.TokenSource(context.Background(), &oauth2.Token{RefreshToken: refreToken})
 	tk, err := tkr.Token()
 	if err != nil {
 		return nil
 	}
-	err = saveToken(cacheFile, tk)
+	//更新token
+	arg := db.UpdateAccessTokenParams{
+		AccessToken:  tk.AccessToken,
+		TokenType:    tk.TokenType,
+		Expiry:       tk.Expiry,
+		UserID:       userId,
+		Provider:     "Google",
+		RefreshToken: refreToken,
+		TokenType_2:  tk.TokenType,
+	}
+	_, err = store.UpdateAccessToken(ctx, arg)
 	if err != nil {
 		return err
 	}

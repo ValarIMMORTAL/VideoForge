@@ -21,6 +21,19 @@ type Copywriting struct {
 	DeleteAt  pgtype.Timestamp `json:"delete_at"`
 }
 
+type Oauth2Token struct {
+	ID           int64            `json:"id"`
+	UserID       int32            `json:"user_id"`
+	Provider     string           `json:"provider"`
+	Api          string           `json:"api"`
+	AccessToken  string           `json:"access_token"`
+	TokenType    string           `json:"token_type"`
+	RefreshToken string           `json:"refresh_token"`
+	Expiry       time.Time        `json:"expiry"`
+	CreatedAt    time.Time        `json:"created_at"`
+	DeleteAt     pgtype.Timestamp `json:"delete_at"`
+}
+
 type Platform struct {
 	ID        int64            `json:"id"`
 	Platform  string           `json:"platform"`

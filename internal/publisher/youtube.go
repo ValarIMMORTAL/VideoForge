@@ -2,6 +2,7 @@ package publisher
 
 import (
 	"context"
+	db "github.com/pule1234/VideoForge/db/sqlc"
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/google"
 	"google.golang.org/api/youtube/v3"
@@ -33,8 +34,8 @@ func NewYouTubePublisher(config PlatformConfig) (Publisher, error) {
 	}, nil
 }
 
-func (y *YouTubePublisher) UploadVideo(ctx context.Context, filePath, title, description, keywords string) (string, error) {
-	client, err := getClient(ctx, youtube.YoutubeUploadScope)
+func (y *YouTubePublisher) UploadVideo(ctx context.Context, filePath, title, description, keywords string, userId int32, store db.Store) (string, error) {
+	client, err := getClient(ctx, youtube.YoutubeUploadScope, userId, store)
 	if err != nil {
 		return "", err
 	}
