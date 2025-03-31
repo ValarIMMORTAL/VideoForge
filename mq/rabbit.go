@@ -88,7 +88,6 @@ func (r *RabbitMQ) PublishItem(item []models.TrendingItem, queueName string) err
 }
 
 // simple 模式下消费者
-// todo 将handler 替换成生成文案的functuon ， 并且将爬取到的关键字（keyword）和关键字来源（item.source）作为参数传入到function中
 func (r *RabbitMQ) ConsumeItem(handler func(item []models.TrendingItem, dbStore *db.Queries) error, queueName string, dbStore *db.Queries, ctx context.Context) {
 	//1.申请队列，如果队列不存在会自动创建，存在则跳过创建
 	q, err := r.channel.QueueDeclare(

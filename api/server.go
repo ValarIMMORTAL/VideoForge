@@ -40,7 +40,6 @@ func NewServer(conf config.Config, store db.Store, factory *publisher.PublisherF
 
 func (server *Server) setupRouter() {
 	router := gin.Default()
-	//todo route定义
 	router.POST("/users", server.createUser)
 	router.POST("/users/login", server.loginUser)
 	router.POST("/tokens/renew_access", server.renewAccessToken)

@@ -55,7 +55,7 @@ type TaskData struct {
 	Script         string   `json:"script"`
 	Terms          string   `json:"terms"`
 	AudioFile      string   `json:"audio_file"`
-	AudioDuration  int      `json:"audio_duration"`
+	AudioDuration  int32    `json:"audio_duration"`
 	SubtitlePath   string   `json:"subtitle_path"`
 	Materials      []string `json:"materials"`
 }

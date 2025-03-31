@@ -4,6 +4,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/pule1234/VideoForge/global"
 	"github.com/pule1234/VideoForge/internal/processor"
+	"github.com/pule1234/VideoForge/token"
 	"net/http"
 )
 
@@ -16,9 +17,18 @@ func (server *Server) generateVideo(c *gin.Context) {
 		return
 	}
 	//todo 进行用户认证，从token中获取到用户信息，将用户和视频生成的taskId进行绑定，存储在redis中，方便后续通知对应用户对应的视频已经生成
-	//userId := 0
-	userName := ""
-
+	payload, exists := c.Get(authorizationPayloadKey)
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "authorization payload not found"})
+		return
+	}
+	authPayload, ok := payload.(*token.Payload)
+	if !ok {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "invalid authorization payload"})
+		return
+	}
+	userName := authPayload.Username
+	userId := authPayload.UserId
 	arg := processor.VideoParams{
 		VideoSubject:        req.VideoSubject,
 		VideoScript:         req.VideoScript,
@@ -51,7 +61,7 @@ func (server *Server) generateVideo(c *gin.Context) {
 	}
 
 	//转换为context
-	result, err := processor.GenerateVideo(global.GlobalCtx, arg)
+	result, err := processor.GenerateVideo(global.GlobalCtx, arg, userName, userId, server.redis, server.store)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, errorResponse(err))
 		return

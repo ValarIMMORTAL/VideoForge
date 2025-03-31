@@ -20,14 +20,14 @@ and delete_at is null
 `
 
 type GetOauth2TokenParams struct {
-	UserID   int32  `json:"user_id"`
+	UserID   int64  `json:"user_id"`
 	Provider string `json:"provider"`
 	Api      string `json:"api"`
 }
 
 type GetOauth2TokenRow struct {
 	ID           int64     `json:"id"`
-	UserID       int32     `json:"user_id"`
+	UserID       int64     `json:"user_id"`
 	Provider     string    `json:"provider"`
 	Api          string    `json:"api"`
 	AccessToken  string    `json:"access_token"`
@@ -67,7 +67,7 @@ insert into oauth2_tokens(
 `
 
 type InsertOauth2TokenParams struct {
-	UserID       int32     `json:"user_id"`
+	UserID       int64     `json:"user_id"`
 	Provider     string    `json:"provider"`
 	Api          string    `json:"api"`
 	AccessToken  string    `json:"access_token"`
@@ -113,7 +113,7 @@ type UpdateAccessTokenParams struct {
 	AccessToken  string    `json:"access_token"`
 	TokenType    string    `json:"token_type"`
 	Expiry       time.Time `json:"expiry"`
-	UserID       int32     `json:"user_id"`
+	UserID       int64     `json:"user_id"`
 	Provider     string    `json:"provider"`
 	RefreshToken string    `json:"refresh_token"`
 	TokenType_2  string    `json:"token_type_2"`

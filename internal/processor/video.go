@@ -4,7 +4,9 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/pule1234/VideoForge/cache"
 	"github.com/pule1234/VideoForge/config"
+	db "github.com/pule1234/VideoForge/db/sqlc"
 	"log"
 	"time"
 )
@@ -14,7 +16,7 @@ const (
 )
 
 // 调用MoneyPrinterTurbo的/api/v1/videos（post） 及api/v1/tasks接口（get）
-func GenerateVideo(ctx context.Context, params VideoParams) (string, error) {
+func GenerateVideo(ctx context.Context, params VideoParams, userName string, userId int64, redis *cache.Redis, store db.Store) (string, error) {
 	conf, _ := config.LoadConfig("../../")
 	//videoUrl := "http://127.0.0.1:8080/api/v1/videos"
 
@@ -41,7 +43,6 @@ func GenerateVideo(ctx context.Context, params VideoParams) (string, error) {
 		//采用指数回避的方式轮询改接口
 		//backoff := 10 * time.Second
 		//maxBackoff := 30 * time.Second
-		fmt.Println("执行中")
 		for {
 			select {
 			case <-ctx.Done():
@@ -60,7 +61,18 @@ func GenerateVideo(ctx context.Context, params VideoParams) (string, error) {
 				if taskResp.Data.State == TaskStateComplete {
 					log.Println("任务结束，视频生成完成")
 					// todo 通知视频生成完成， 需要传递当前用户的信息
-
+					redis.SRem(ctx, userName, taskId) //视频生成完成、将当前user的task从redis中删除
+					arg := db.InsertVideoParams{
+						Title:    params.VideoSubject,
+						Url:      taskResp.Data.Videos[0],
+						Duration: taskResp.Data.AudioDuration,
+						UserID:   userId,
+					}
+					_, err := store.InsertVideo(ctx, arg)
+					if err != nil {
+						log.Println("视频和用户绑定失败", err)
+						return
+					}
 					return
 				}
 				//backoff = min(backoff*2, maxBackoff)
