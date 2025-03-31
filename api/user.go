@@ -80,6 +80,7 @@ func (server *Server) loginUser(ctx *gin.Context) {
 
 	//创建token
 	accessToken, accessPayload, err := server.tokenMaker.CreateToken(
+		user.ID,
 		user.Username,
 		server.config.AccessTokenDuration,
 	)
@@ -89,6 +90,7 @@ func (server *Server) loginUser(ctx *gin.Context) {
 	}
 
 	refreshToken, refreshPayload, err := server.tokenMaker.CreateToken(
+		user.ID,
 		user.Username,
 		server.config.RefreshTokenDuration,
 	)

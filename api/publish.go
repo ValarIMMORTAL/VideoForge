@@ -3,6 +3,7 @@ package api
 import (
 	"fmt"
 	"github.com/gin-gonic/gin"
+	"github.com/pule1234/VideoForge/token"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -47,8 +48,22 @@ func (server *Server) UploadVideo(c *gin.Context) {
 	defer os.Remove(tempFilePath)
 
 	// 4. 调用 Publisher 上传
-	userId, _ := c.Get(authorizationPayloadKey)
-	videoID, err := publisher.UploadVideo(c.Request.Context(), tempFilePath, title, description, "keyword", userId)
+	payload, exists := c.Get(authorizationPayloadKey)
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "authorization payload not found"})
+		return
+	}
+
+	// 类型断言，将 interface{} 转换为具体类型
+	authPayload, ok := payload.(*token.Payload)
+	if !ok {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "invalid authorization payload"})
+		return
+	}
+
+	userID := authPayload.UserId
+	//var userID int32 = 1
+	videoID, err := publisher.UploadVideo(c.Request.Context(), tempFilePath, title, description, "keyword", userID, server.store)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "上传失败: " + err.Error()})
 		return
@@ -60,7 +75,3 @@ func (server *Server) UploadVideo(c *gin.Context) {
 		"platform": publisher.Platform(),
 	})
 }
-
-//func ()  {
-//
-//}

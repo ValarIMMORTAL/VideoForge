@@ -7,10 +7,11 @@ package db
 
 import (
 	"context"
+	"time"
 )
 
 const getOauth2Token = `-- name: GetOauth2Token :one
-select id, user_id, provider,api,refresh_token
+select id, user_id, provider,api,access_token,token_type,refresh_token,expiry
 from oauth2_tokens
 where user_id = $1
 and provider = $2
@@ -25,11 +26,14 @@ type GetOauth2TokenParams struct {
 }
 
 type GetOauth2TokenRow struct {
-	ID           int64  `json:"id"`
-	UserID       int32  `json:"user_id"`
-	Provider     string `json:"provider"`
-	Api          string `json:"api"`
-	RefreshToken string `json:"refresh_token"`
+	ID           int64     `json:"id"`
+	UserID       int32     `json:"user_id"`
+	Provider     string    `json:"provider"`
+	Api          string    `json:"api"`
+	AccessToken  string    `json:"access_token"`
+	TokenType    string    `json:"token_type"`
+	RefreshToken string    `json:"refresh_token"`
+	Expiry       time.Time `json:"expiry"`
 }
 
 func (q *Queries) GetOauth2Token(ctx context.Context, arg GetOauth2TokenParams) (GetOauth2TokenRow, error) {
@@ -40,7 +44,10 @@ func (q *Queries) GetOauth2Token(ctx context.Context, arg GetOauth2TokenParams) 
 		&i.UserID,
 		&i.Provider,
 		&i.Api,
+		&i.AccessToken,
+		&i.TokenType,
 		&i.RefreshToken,
+		&i.Expiry,
 	)
 	return i, err
 }
@@ -50,17 +57,23 @@ insert into oauth2_tokens(
                           user_id,
                           provider,
                           api,
-                          refresh_token
+                          access_token,
+                          token_type,
+                          refresh_token,
+                          expiry
 ) values (
-          $1,$2,$3,$4
-         ) RETURNING id, user_id, provider, api, refresh_token, created_at, delete_at
+          $1,$2,$3,$4,$5,$6,$7
+         ) RETURNING id, user_id, provider, api, access_token, token_type, refresh_token, expiry, created_at, delete_at
 `
 
 type InsertOauth2TokenParams struct {
-	UserID       int32  `json:"user_id"`
-	Provider     string `json:"provider"`
-	Api          string `json:"api"`
-	RefreshToken string `json:"refresh_token"`
+	UserID       int32     `json:"user_id"`
+	Provider     string    `json:"provider"`
+	Api          string    `json:"api"`
+	AccessToken  string    `json:"access_token"`
+	TokenType    string    `json:"token_type"`
+	RefreshToken string    `json:"refresh_token"`
+	Expiry       time.Time `json:"expiry"`
 }
 
 func (q *Queries) InsertOauth2Token(ctx context.Context, arg InsertOauth2TokenParams) (Oauth2Token, error) {
@@ -68,7 +81,10 @@ func (q *Queries) InsertOauth2Token(ctx context.Context, arg InsertOauth2TokenPa
 		arg.UserID,
 		arg.Provider,
 		arg.Api,
+		arg.AccessToken,
+		arg.TokenType,
 		arg.RefreshToken,
+		arg.Expiry,
 	)
 	var i Oauth2Token
 	err := row.Scan(
@@ -76,7 +92,53 @@ func (q *Queries) InsertOauth2Token(ctx context.Context, arg InsertOauth2TokenPa
 		&i.UserID,
 		&i.Provider,
 		&i.Api,
+		&i.AccessToken,
+		&i.TokenType,
 		&i.RefreshToken,
+		&i.Expiry,
+		&i.CreatedAt,
+		&i.DeleteAt,
+	)
+	return i, err
+}
+
+const updateAccessToken = `-- name: UpdateAccessToken :one
+update oauth2_tokens
+set access_token = $1, token_type = $2, expiry = $3
+where user_id = $4 and provider = $5 and refresh_token = $6 and token_type = $7
+RETURNING id, user_id, provider, api, access_token, token_type, refresh_token, expiry, created_at, delete_at
+`
+
+type UpdateAccessTokenParams struct {
+	AccessToken  string    `json:"access_token"`
+	TokenType    string    `json:"token_type"`
+	Expiry       time.Time `json:"expiry"`
+	UserID       int32     `json:"user_id"`
+	Provider     string    `json:"provider"`
+	RefreshToken string    `json:"refresh_token"`
+	TokenType_2  string    `json:"token_type_2"`
+}
+
+func (q *Queries) UpdateAccessToken(ctx context.Context, arg UpdateAccessTokenParams) (Oauth2Token, error) {
+	row := q.db.QueryRow(ctx, updateAccessToken,
+		arg.AccessToken,
+		arg.TokenType,
+		arg.Expiry,
+		arg.UserID,
+		arg.Provider,
+		arg.RefreshToken,
+		arg.TokenType_2,
+	)
+	var i Oauth2Token
+	err := row.Scan(
+		&i.ID,
+		&i.UserID,
+		&i.Provider,
+		&i.Api,
+		&i.AccessToken,
+		&i.TokenType,
+		&i.RefreshToken,
+		&i.Expiry,
 		&i.CreatedAt,
 		&i.DeleteAt,
 	)

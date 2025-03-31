@@ -15,5 +15,7 @@ migratedown:
 migratedown1:
 	migrate -path db/migration -database "$(DB_URL)" -verbose down 1
 
+migratedownall:
+	migrate -path db/migration -database "$(DB_URL)" -verbose drop
 sqlc:
 	sqlc generate

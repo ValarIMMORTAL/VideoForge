@@ -25,6 +25,7 @@ type Querier interface {
 	GetUserByName(ctx context.Context, username string) (User, error)
 	InsertOauth2Token(ctx context.Context, arg InsertOauth2TokenParams) (Oauth2Token, error)
 	ListCopies(ctx context.Context, arg ListCopiesParams) ([]Copywriting, error)
+	UpdateAccessToken(ctx context.Context, arg UpdateAccessTokenParams) (Oauth2Token, error)
 	UpdateUser(ctx context.Context, arg UpdateUserParams) (User, error)
 }
 
