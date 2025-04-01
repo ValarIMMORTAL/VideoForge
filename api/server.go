@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/pule1234/VideoForge/cache"
+	"github.com/pule1234/VideoForge/cloud"
 	"github.com/pule1234/VideoForge/config"
 	db "github.com/pule1234/VideoForge/db/sqlc"
 	"github.com/pule1234/VideoForge/internal/publisher"
@@ -18,6 +19,7 @@ type Server struct {
 	redis            *cache.Redis
 	tokenMaker       token.Maker
 	publisherFactory *publisher.PublisherFactory
+	qnManager        *cloud.QiNiu
 }
 
 func NewServer(conf config.Config, store db.Store, factory *publisher.PublisherFactory) (*Server, error) {
@@ -30,6 +32,7 @@ func NewServer(conf config.Config, store db.Store, factory *publisher.PublisherF
 		store:            store,
 		router:           gin.Default(),
 		redis:            cache.RedisClient,
+		qnManager:        cloud.QNManager,
 		publisherFactory: factory,
 		tokenMaker:       tokenMaker,
 	}

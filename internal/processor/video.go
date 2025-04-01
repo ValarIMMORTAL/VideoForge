@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/pule1234/VideoForge/cache"
+	"github.com/pule1234/VideoForge/cloud"
 	"github.com/pule1234/VideoForge/config"
 	db "github.com/pule1234/VideoForge/db/sqlc"
 	"log"
@@ -16,7 +17,7 @@ const (
 )
 
 // 调用MoneyPrinterTurbo的/api/v1/videos（post） 及api/v1/tasks接口（get）
-func GenerateVideo(ctx context.Context, params VideoParams, userName string, userId int64, redis *cache.Redis, store db.Store) (string, error) {
+func GenerateVideo(ctx context.Context, params VideoParams, userName string, userId int64, redis *cache.Redis, store db.Store, storage *cloud.QiNiu) (string, error) {
 	conf, _ := config.LoadConfig("../../")
 	//videoUrl := "http://127.0.0.1:8080/api/v1/videos"
 
@@ -62,9 +63,17 @@ func GenerateVideo(ctx context.Context, params VideoParams, userName string, use
 					log.Println("任务结束，视频生成完成")
 					// todo 通知视频生成完成， 需要传递当前用户的信息
 					redis.SRem(ctx, userName, taskId) //视频生成完成、将当前user的task从redis中删除
+					//视频存储到七牛云
+					localPath := conf.VideoPath + "/" + taskId + "/combined-1.mp4"
+					err = storage.UploadFile(ctx, localPath, "videofore-videos", params.VideoSubject+".mp4", params.VideoSubject+".mp4")
+					if err != nil {
+						log.Println("七牛云上传出错" + err.Error())
+						return
+					}
+					externalLink := conf.CdnDomain + params.VideoSubject + ".mp4"
 					arg := db.InsertVideoParams{
 						Title:    params.VideoSubject,
-						Url:      taskResp.Data.Videos[0],
+						Url:      externalLink,
 						Duration: taskResp.Data.AudioDuration,
 						UserID:   userId,
 					}

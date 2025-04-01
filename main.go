@@ -4,6 +4,7 @@ import (
 	"github.com/jackc/pgx/v5"
 	"github.com/pule1234/VideoForge/api"
 	"github.com/pule1234/VideoForge/cache"
+	"github.com/pule1234/VideoForge/cloud"
 	"github.com/pule1234/VideoForge/config"
 	db "github.com/pule1234/VideoForge/db/sqlc"
 	"github.com/pule1234/VideoForge/global"
@@ -30,10 +31,13 @@ func main() {
 		log.Fatal("connect postgres err ", err)
 	}
 	q := db.New(conn)
+	//初始化QiNiu
+	cloud.InitQiNiu(q)
 	// 初始化 Publisher 工厂
 	factory := publisher.NewPublisherFactory(q)
 	dyCrawler, err := crawler.NewDyCrawler(loadConfig.DouYingQueueName, q)
 	go dyCrawler.Rabbit.ConsumeItem(processor.CreateCopyWriting, loadConfig.DouYingQueueName, dyCrawler.Postgres, global.GlobalCtx)
+
 	runGinServer(*loadConfig, q, factory)
 }
 

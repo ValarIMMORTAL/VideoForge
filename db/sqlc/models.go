@@ -53,6 +53,15 @@ type Session struct {
 	CreatedAt    time.Time `json:"created_at"`
 }
 
+type ThirdKey struct {
+	ID        int64            `json:"id"`
+	Name      string           `json:"name"`
+	Ak        string           `json:"ak"`
+	Sk        string           `json:"sk"`
+	CreatedAt time.Time        `json:"created_at"`
+	DeleteAt  pgtype.Timestamp `json:"delete_at"`
+}
+
 type User struct {
 	ID             int64     `json:"id"`
 	Username       string    `json:"username"`
