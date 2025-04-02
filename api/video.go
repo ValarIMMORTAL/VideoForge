@@ -61,7 +61,7 @@ func (server *Server) generateVideo(c *gin.Context) {
 	}
 
 	//转换为context
-	result, err := processor.GenerateVideo(global.GlobalCtx, arg, userName, userId, server.redis, server.store)
+	result, err := processor.GenerateVideo(global.GlobalCtx, arg, userName, userId, server.redis, server.store, server.qnManager)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, errorResponse(err))
 		return

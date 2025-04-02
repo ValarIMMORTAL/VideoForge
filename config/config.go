@@ -26,6 +26,8 @@ type Config struct {
 	AccessTokenDuration  time.Duration `mapstructure:"ACCESS_TOKEN_DURATION"`
 	RefreshTokenDuration time.Duration `mapstructure:"REFRESH_TOKEN_DURATION"`
 	TokenSymmetricKey    string        `mapstructure:"TOKEN_SYMMETRIC_KEY"`
+	VideoPath            string        `mapstructure:"VIDEOPATH"`
+	CdnDomain            string        `mapstructure:"CDNDOMAIN"`
 }
 
 func LoadConfig(path string) (*Config, error) {
