@@ -8,6 +8,7 @@ import (
 	"github.com/pule1234/VideoForge/config"
 	db "github.com/pule1234/VideoForge/db/sqlc"
 	"github.com/pule1234/VideoForge/internal/publisher"
+	"github.com/pule1234/VideoForge/mq"
 	"github.com/pule1234/VideoForge/token"
 )
 
@@ -20,6 +21,7 @@ type Server struct {
 	tokenMaker       token.Maker
 	publisherFactory *publisher.PublisherFactory
 	qnManager        *cloud.QiNiu
+	mq               *mq.RabbitMQ
 }
 
 func NewServer(conf config.Config, store db.Store, factory *publisher.PublisherFactory) (*Server, error) {
@@ -35,6 +37,7 @@ func NewServer(conf config.Config, store db.Store, factory *publisher.PublisherF
 		qnManager:        cloud.QNManager,
 		publisherFactory: factory,
 		tokenMaker:       tokenMaker,
+		mq:               mq.GlobalRabbitMQ,
 	}
 	server.setupRouter()
 

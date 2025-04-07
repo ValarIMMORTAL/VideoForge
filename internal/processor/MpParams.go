@@ -59,3 +59,11 @@ type TaskData struct {
 	SubtitlePath   string   `json:"subtitle_path"`
 	Materials      []string `json:"materials"`
 }
+
+// 视频生成完成提示消息
+type VideoMsg struct {
+	Event    string `json:event`
+	Video_id int64  `json:video_id`
+	User_id  int64  `json:user_id`
+	Url      string `json:url`
+}

@@ -44,7 +44,7 @@ func NewRabbitConn() (*RabbitMQ, error) {
 	}, nil
 }
 
-func (r *RabbitMQ) PublishItem(item []models.TrendingItem, queueName string) error {
+func (r *RabbitMQ) PublishItem(item interface{}, queueName string) error {
 	//1.申请队列，如果队列不存在会自动创建，存在则跳过创建
 	_, err := r.channel.QueueDeclare(
 		queueName,
@@ -64,7 +64,7 @@ func (r *RabbitMQ) PublishItem(item []models.TrendingItem, queueName string) err
 	}
 
 	message, _ := json.Marshal(item)
-	//调用channel 发送消息到队列中
+	//调用channel 发送消息到队列
 	err = r.channel.Publish(
 		"",
 		queueName,

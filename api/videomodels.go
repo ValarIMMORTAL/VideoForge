@@ -30,4 +30,5 @@ type generateVideo struct {
 	StrokeWidth         float32 `json:"stroke_color"`
 	NThreads            int     `json:"n_threads"`
 	ParagraphNumber     int     `json:"paragraph_number"`
+	FileName            string  `json:"file_name"`
 }
