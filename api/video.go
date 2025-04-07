@@ -16,7 +16,7 @@ func (server *Server) generateVideo(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, errorResponse(err))
 		return
 	}
-	//todo 进行用户认证，从token中获取到用户信息，将用户和视频生成的taskId进行绑定，存储在redis中，方便后续通知对应用户对应的视频已经生成
+
 	payload, exists := c.Get(authorizationPayloadKey)
 	if !exists {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "authorization payload not found"})
@@ -71,4 +71,46 @@ func (server *Server) generateVideo(c *gin.Context) {
 	server.redis.SAdd(c, userName, result)
 
 	c.JSON(http.StatusOK, result)
+}
+
+// 获取用户视频列表
+func (server *Server) getVideos(c *gin.Context) {
+	var req getVideosByUidReq
+
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, errorResponse(err))
+		return
+	}
+
+	payload, exists := c.Get(authorizationPayloadKey)
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "authorization payload not found"})
+		return
+	}
+	authPayload, ok := payload.(*token.Payload)
+	if !ok {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "invalid authorization payload"})
+		return
+	}
+	userId := authPayload.UserId
+
+	videos, err := server.store.GetVideosByUid(c, userId)
+	if err != nil {
+		return
+	}
+	temp := []Videos{}
+	for _, video := range videos {
+		temp = append(temp, Videos{
+			id:    video.ID,
+			title: video.Title,
+			url:   video.Url,
+		})
+	}
+	resp := getVideosByUidResp{
+		Videos: temp,
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"data": resp,
+	})
 }

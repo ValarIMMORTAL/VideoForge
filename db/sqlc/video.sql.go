@@ -9,6 +9,40 @@ import (
 	"context"
 )
 
+const getVideosByUid = `-- name: GetVideosByUid :many
+select id, title, url, duration, user_id, created_at, delete_at from videos
+where user_id = $1
+and delete_at is null
+`
+
+func (q *Queries) GetVideosByUid(ctx context.Context, userID int64) ([]Video, error) {
+	rows, err := q.db.Query(ctx, getVideosByUid, userID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []Video{}
+	for rows.Next() {
+		var i Video
+		if err := rows.Scan(
+			&i.ID,
+			&i.Title,
+			&i.Url,
+			&i.Duration,
+			&i.UserID,
+			&i.CreatedAt,
+			&i.DeleteAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const insertVideo = `-- name: InsertVideo :one
 insert into videos(
                    title,

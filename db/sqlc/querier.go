@@ -24,6 +24,7 @@ type Querier interface {
 	GetThirdKeyByName(ctx context.Context, name string) (ThirdKey, error)
 	GetUser(ctx context.Context, id int64) (User, error)
 	GetUserByName(ctx context.Context, username string) (User, error)
+	GetVideosByUid(ctx context.Context, userID int64) ([]Video, error)
 	InsertOauth2Token(ctx context.Context, arg InsertOauth2TokenParams) (Oauth2Token, error)
 	InsertThirdKey(ctx context.Context, arg InsertThirdKeyParams) (ThirdKey, error)
 	InsertVideo(ctx context.Context, arg InsertVideoParams) (Video, error)

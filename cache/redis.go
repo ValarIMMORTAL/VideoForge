@@ -26,7 +26,6 @@ func NewRedisConn() (*Redis, error) {
 	return &Redis{rdb}, nil
 }
 
-// todo 分装一套redis请求方法
 // 向集合中添加数据
 func (r *Redis) SAdd(ctx context.Context, key string, members ...interface{}) {
 	r.conn.SAdd(ctx, key, members)

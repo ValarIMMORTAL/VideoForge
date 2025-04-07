@@ -53,6 +53,7 @@ func (server *Server) setupRouter() {
 	//加入token
 
 	authRoutes := router.Group("/").Use(authMiddleware(server.tokenMaker)) // 使用中间件进行认证
+	authRoutes.GET("/getVideos", server.getVideos)
 	authRoutes.POST("/generateVideo", server.generateVideo)
 	authRoutes.POST("/upload-video", server.UploadVideo)
 	server.router = router

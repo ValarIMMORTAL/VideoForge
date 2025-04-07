@@ -32,3 +32,20 @@ type generateVideo struct {
 	ParagraphNumber     int     `json:"paragraph_number"`
 	FileName            string  `json:"file_name"`
 }
+
+type getVideosByUidReq struct {
+	Page int `json:"page"`
+	Num  int `json:"num"`
+}
+
+type getVideosByUidResp struct {
+	Videos []Videos `json:"videos"`
+	Count  int      `json:"count"`
+}
+
+type Videos struct {
+	id       int64  `json:"id"`
+	title    string `json:"title"`
+	url      string `json:"url"`
+	duration int    `json:"duration"`
+}

@@ -68,7 +68,7 @@ func (q *QiNiu) GetAllFileByUser(ctx context.Context, user, bucketName string) (
 
 	//获取文件列表
 	fileNames := make([]string, 0)
-	fileNames = append(fileNames, "combined-1.mp4")
+	fileNames = append(fileNames, "为什么要运动.mp4")
 
 	ops := make([]objects.Operation, len(fileNames))
 	for i, name := range fileNames {
