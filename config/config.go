@@ -28,6 +28,7 @@ type Config struct {
 	TokenSymmetricKey    string        `mapstructure:"TOKEN_SYMMETRIC_KEY"`
 	VideoPath            string        `mapstructure:"VIDEOPATH"`
 	CdnDomain            string        `mapstructure:"CDNDOMAIN"`
+	TempDir              string        `mapstructure:"TEMPDIR"`
 }
 
 func LoadConfig(path string) (*Config, error) {

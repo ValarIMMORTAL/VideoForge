@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"strconv"
 )
 
 func (server *Server) UploadVideo(c *gin.Context) {
@@ -25,29 +26,6 @@ func (server *Server) UploadVideo(c *gin.Context) {
 		return
 	}
 
-	// 3. 处理文件上传
-	file, err := c.FormFile("video")
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "文件上传失败: " + err.Error()})
-		return
-	}
-
-	// 保存到临时文件
-	tempDir := "tmp"
-	if err := os.MkdirAll(tempDir, 0777); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "创建临时目录失败"})
-		return
-	}
-
-	tempFilePath := filepath.Join(tempDir, file.Filename)
-	if err := c.SaveUploadedFile(file, tempFilePath); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "保存文件失败: " + err.Error()})
-		return
-	}
-	fmt.Println("文件路径 : " + tempFilePath)
-	defer os.Remove(tempFilePath)
-
-	// 4. 调用 Publisher 上传
 	payload, exists := c.Get(authorizationPayloadKey)
 	if !exists {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "authorization payload not found"})
@@ -62,6 +40,48 @@ func (server *Server) UploadVideo(c *gin.Context) {
 	}
 
 	userID := authPayload.UserId
+	userName := authPayload.Username
+
+	// 3. 处理文件上传
+	file, err := c.FormFile("video")
+	if err != nil && err != http.ErrMissingFile {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "文件上传失败: " + err.Error()})
+		return
+	}
+	var tempFilePath string
+	if err == http.ErrMissingFile {
+		videoId := c.PostForm("video_id")
+		if videoId == "" {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "未指定视频"})
+			return
+		}
+		num, err := strconv.ParseInt(videoId, 10, 64)
+		video, err2 := server.store.GetVideosById(c, num)
+		if err2 != nil {
+			return
+		}
+		tempFilePath, err = server.qnManager.DownloadFile(server.config, video.Title, userName, "videofore-videos", video.Subscribe, "su15t494p.hn-bkt.clouddn.com")
+		if err != nil {
+			return
+		}
+	} else {
+		// 保存到临时文件
+		tempDir := "tmp"
+		if err := os.MkdirAll(tempDir, 0777); err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "创建临时目录失败"})
+			return
+		}
+
+		tempFilePath := filepath.Join(tempDir, file.Filename)
+		if err := c.SaveUploadedFile(file, tempFilePath); err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "保存文件失败: " + err.Error()})
+			return
+		}
+		fmt.Println("文件路径 : " + tempFilePath)
+	}
+	defer os.Remove(tempFilePath)
+
+	// 4. 调用 Publisher 上传
 	//var userID int32 = 1
 	videoID, err := publisher.UploadVideo(c.Request.Context(), tempFilePath, title, description, "keyword", userID, server.store)
 	if err != nil {

@@ -9,8 +9,29 @@ import (
 	"context"
 )
 
+const getVideosById = `-- name: GetVideosById :one
+select id, title, url, duration, user_id, subscribe, created_at, delete_at from videos
+where id = $1
+`
+
+func (q *Queries) GetVideosById(ctx context.Context, id int64) (Video, error) {
+	row := q.db.QueryRow(ctx, getVideosById, id)
+	var i Video
+	err := row.Scan(
+		&i.ID,
+		&i.Title,
+		&i.Url,
+		&i.Duration,
+		&i.UserID,
+		&i.Subscribe,
+		&i.CreatedAt,
+		&i.DeleteAt,
+	)
+	return i, err
+}
+
 const getVideosByUid = `-- name: GetVideosByUid :many
-select id, title, url, duration, user_id, created_at, delete_at from videos
+select id, title, url, duration, user_id, subscribe, created_at, delete_at from videos
 where user_id = $1
 and delete_at is null
 `
@@ -30,6 +51,7 @@ func (q *Queries) GetVideosByUid(ctx context.Context, userID int64) ([]Video, er
 			&i.Url,
 			&i.Duration,
 			&i.UserID,
+			&i.Subscribe,
 			&i.CreatedAt,
 			&i.DeleteAt,
 		); err != nil {
@@ -51,7 +73,7 @@ insert into videos(
                    user_id
 ) values (
           $1,$2,$3,$4
-         )  RETURNING id, title, url, duration, user_id, created_at, delete_at
+         )  RETURNING id, title, url, duration, user_id, subscribe, created_at, delete_at
 `
 
 type InsertVideoParams struct {
@@ -75,6 +97,7 @@ func (q *Queries) InsertVideo(ctx context.Context, arg InsertVideoParams) (Video
 		&i.Url,
 		&i.Duration,
 		&i.UserID,
+		&i.Subscribe,
 		&i.CreatedAt,
 		&i.DeleteAt,
 	)

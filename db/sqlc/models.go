@@ -76,6 +76,7 @@ type Video struct {
 	Url       string           `json:"url"`
 	Duration  int32            `json:"duration"`
 	UserID    int64            `json:"user_id"`
+	Subscribe int64            `json:"subscribe"`
 	CreatedAt time.Time        `json:"created_at"`
 	DeleteAt  pgtype.Timestamp `json:"delete_at"`
 }

@@ -12,3 +12,7 @@ insert into videos(
 select * from videos
 where user_id = $1
 and delete_at is null;
+
+-- name: GetVideosById :one
+select * from videos
+where id = $1;

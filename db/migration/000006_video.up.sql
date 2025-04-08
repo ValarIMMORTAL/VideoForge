@@ -4,6 +4,7 @@ CREATE TABLE "videos" (
                                  "url" varchar not null ,
                                  "duration" integer not null ,
                                  "user_id" BIGINT NOT NULL,
+                                 "subscribe" BIGINT not null ,
                                  "created_at" timestamptz NOT NULL DEFAULT (now()),
                                  "delete_at" timestamp default null
 );
