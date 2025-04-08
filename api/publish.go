@@ -62,6 +62,7 @@ func (server *Server) UploadVideo(c *gin.Context) {
 		}
 		tempFilePath, err = server.qnManager.DownloadFile(server.config, video.Title, userName, "videofore-videos", video.Subscribe, "su15t494p.hn-bkt.clouddn.com")
 		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "上传文件失败: " + err.Error()})
 			return
 		}
 	} else {
