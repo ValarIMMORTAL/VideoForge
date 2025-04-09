@@ -1,0 +1,17 @@
+syntax = "proto3";
+
+package pb;
+import "user.proto";
+import "google/api/annotations.proto";
+
+option go_package = "github.com/pule1234/VideoForge/pb";
+
+service VideosForge {
+  rpc RenewAccessToken (RenewAccessTokenRequest) returns (RenewAccessTokenResponse) {
+    option (google.api.http) =  {
+      post: "/v1/create_user"
+      body: "*"
+    };
+  }
+
+}
