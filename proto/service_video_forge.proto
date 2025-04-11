@@ -2,6 +2,7 @@ syntax = "proto3";
 
 package pb;
 import "user.proto";
+import "video.proto";
 import "google/api/annotations.proto";
 
 option go_package = "github.com/pule1234/VideoForge/pb";
@@ -24,6 +25,20 @@ service VideosForge {
   rpc CreateUser (CreateUserRequest) returns (CreateUserResponse) {
     option (google.api.http) = {
       post: "/v1/create_user"
+      body: "*"
+    };
+  }
+
+  rpc GenerateVideo (GenerateVideoRequest) returns (GenerateVideoResponse) {
+    option (google.api.http) = {
+      post: "/v1/generate_video"
+      body: "*"
+    };
+  }
+
+  rpc GetVideos (GetVideosRequest) returns (GetVideosResponse) {
+    option (google.api.http) = {
+      post: "/v1/get_video"
       body: "*"
     };
   }

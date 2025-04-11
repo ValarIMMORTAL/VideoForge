@@ -1,0 +1,57 @@
+syntax = "proto3";
+
+package pb;
+option go_package = "github.com/pule1234/VideoForge/pb";
+
+message Video {
+  int64 id = 1;
+  string title = 2;
+  string url = 3;
+  int32 duration = 4;
+}
+
+message GenerateVideoRequest {
+  string video_subject = 1;
+  string video_script = 2;
+  string video_terms = 3;
+  string video_aspect = 4;
+  string video_con_cat_mode = 5;
+  string video_transition_mode = 6;
+  int32 video_clip_duration = 7;
+  int32 video_count = 8;
+  string video_source = 9;
+  string video_materals = 10;  // 注意: 原拼写可能是materials
+  string video_language = 11;
+  string voice_name = 12;
+  float voice_volume = 13;
+  float voice_rate = 14;
+  string bgm_type = 15;
+  string bgm_file = 16;
+  float bgm_volume = 17;
+  bool subtitle_enabled = 18;
+  string subtitle_position = 19;
+  float custom_position = 20;
+  string font_name = 21;
+  string text_fore_color = 22;
+  bool text_background_color = 23;
+  int32 font_size = 24;
+  string stroke_color = 25;
+  float stroke_width = 26;  // 修正: 原结构体中有重复的stroke_color
+  int32 n_threads = 27;
+  int32 paragraph_number = 28;
+  string file_name = 29;
+}
+
+message GenerateVideoResponse {
+  string task_id = 1;
+}
+
+message GetVideosRequest {
+  int32 page = 1;
+  int32 num = 2;
+}
+
+message GetVideosResponse {
+  Video videos = 1;
+}
+
