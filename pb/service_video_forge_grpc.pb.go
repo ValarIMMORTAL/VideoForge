@@ -20,6 +20,8 @@ const _ = grpc.SupportPackageIsVersion9
 
 const (
 	VideosForge_RenewAccessToken_FullMethodName = "/pb.VideosForge/RenewAccessToken"
+	VideosForge_UserLogin_FullMethodName        = "/pb.VideosForge/UserLogin"
+	VideosForge_CreateUser_FullMethodName       = "/pb.VideosForge/CreateUser"
 )
 
 // VideosForgeClient is the client API for VideosForge service.
@@ -27,6 +29,8 @@ const (
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type VideosForgeClient interface {
 	RenewAccessToken(ctx context.Context, in *RenewAccessTokenRequest, opts ...grpc.CallOption) (*RenewAccessTokenResponse, error)
+	UserLogin(ctx context.Context, in *UserLoginRequest, opts ...grpc.CallOption) (*UserLoginResponse, error)
+	CreateUser(ctx context.Context, in *CreateUserRequest, opts ...grpc.CallOption) (*CreateUserResponse, error)
 }
 
 type videosForgeClient struct {
@@ -47,11 +51,33 @@ func (c *videosForgeClient) RenewAccessToken(ctx context.Context, in *RenewAcces
 	return out, nil
 }
 
+func (c *videosForgeClient) UserLogin(ctx context.Context, in *UserLoginRequest, opts ...grpc.CallOption) (*UserLoginResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(UserLoginResponse)
+	err := c.cc.Invoke(ctx, VideosForge_UserLogin_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *videosForgeClient) CreateUser(ctx context.Context, in *CreateUserRequest, opts ...grpc.CallOption) (*CreateUserResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(CreateUserResponse)
+	err := c.cc.Invoke(ctx, VideosForge_CreateUser_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // VideosForgeServer is the server API for VideosForge service.
 // All implementations must embed UnimplementedVideosForgeServer
 // for forward compatibility.
 type VideosForgeServer interface {
 	RenewAccessToken(context.Context, *RenewAccessTokenRequest) (*RenewAccessTokenResponse, error)
+	UserLogin(context.Context, *UserLoginRequest) (*UserLoginResponse, error)
+	CreateUser(context.Context, *CreateUserRequest) (*CreateUserResponse, error)
 	mustEmbedUnimplementedVideosForgeServer()
 }
 
@@ -64,6 +90,12 @@ type UnimplementedVideosForgeServer struct{}
 
 func (UnimplementedVideosForgeServer) RenewAccessToken(context.Context, *RenewAccessTokenRequest) (*RenewAccessTokenResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method RenewAccessToken not implemented")
+}
+func (UnimplementedVideosForgeServer) UserLogin(context.Context, *UserLoginRequest) (*UserLoginResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UserLogin not implemented")
+}
+func (UnimplementedVideosForgeServer) CreateUser(context.Context, *CreateUserRequest) (*CreateUserResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CreateUser not implemented")
 }
 func (UnimplementedVideosForgeServer) mustEmbedUnimplementedVideosForgeServer() {}
 func (UnimplementedVideosForgeServer) testEmbeddedByValue()                     {}
@@ -104,6 +136,42 @@ func _VideosForge_RenewAccessToken_Handler(srv interface{}, ctx context.Context,
 	return interceptor(ctx, in, info, handler)
 }
 
+func _VideosForge_UserLogin_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UserLoginRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(VideosForgeServer).UserLogin(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: VideosForge_UserLogin_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(VideosForgeServer).UserLogin(ctx, req.(*UserLoginRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _VideosForge_CreateUser_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CreateUserRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(VideosForgeServer).CreateUser(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: VideosForge_CreateUser_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(VideosForgeServer).CreateUser(ctx, req.(*CreateUserRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // VideosForge_ServiceDesc is the grpc.ServiceDesc for VideosForge service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -114,6 +182,14 @@ var VideosForge_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "RenewAccessToken",
 			Handler:    _VideosForge_RenewAccessToken_Handler,
+		},
+		{
+			MethodName: "UserLogin",
+			Handler:    _VideosForge_UserLogin_Handler,
+		},
+		{
+			MethodName: "CreateUser",
+			Handler:    _VideosForge_CreateUser_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

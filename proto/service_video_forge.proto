@@ -9,9 +9,22 @@ option go_package = "github.com/pule1234/VideoForge/pb";
 service VideosForge {
   rpc RenewAccessToken (RenewAccessTokenRequest) returns (RenewAccessTokenResponse) {
     option (google.api.http) =  {
-      post: "/v1/create_user"
+      post: "/v1/renew_token"
       body: "*"
     };
   }
 
+  rpc UserLogin (UserLoginRequest) returns (UserLoginResponse) {
+    option (google.api.http) = {
+      post: "/v1/user_login"
+      body: "*"
+    };
+  }
+
+  rpc CreateUser (CreateUserRequest) returns (CreateUserResponse) {
+    option (google.api.http) = {
+      post: "/v1/create_user"
+      body: "*"
+    };
+  }
 }

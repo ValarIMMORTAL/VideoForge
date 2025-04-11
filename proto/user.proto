@@ -20,3 +20,29 @@ message RenewAccessTokenResponse {
   string AccessToken = 1;
   google.protobuf.Timestamp AccessTokenExpireAt = 2;
 }
+
+message CreateUserRequest {
+  string UserName = 1;
+  string Password = 2;
+  string Email = 3;
+}
+
+message CreateUserResponse {
+  int64 UserId = 1;
+  string UserName = 2;
+  string Email = 3;
+}
+
+message UserLoginRequest {
+  string UserName = 1;
+  string passWord = 2;
+}
+
+message UserLoginResponse {
+  User user = 1;
+  string session_id = 2;
+  string access_token = 3;
+  string refresh_token = 4;
+  google.protobuf.Timestamp access_token_expires_at = 5;
+  google.protobuf.Timestamp refresh_token_expires_at = 6;
+}
