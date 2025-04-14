@@ -5,7 +5,7 @@ import "user.proto";
 import "video.proto";
 import "google/api/annotations.proto";
 
-option go_package = "github.com/pule1234/VideoForge/pb";
+option go_package = "github.com/pule1234/VideoForge/pb;pb";
 
 service VideosForge {
   rpc RenewAccessToken (RenewAccessTokenRequest) returns (RenewAccessTokenResponse) {

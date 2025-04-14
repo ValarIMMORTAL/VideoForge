@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package pb;
 import "google/protobuf/timestamp.proto";
-option go_package = "github.com/pule1234/VideoForge/pb";
+option go_package = "github.com/pule1234/VideoForge/pb;pb";
 
 
 message User{

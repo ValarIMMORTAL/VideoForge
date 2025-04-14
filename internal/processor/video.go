@@ -31,7 +31,7 @@ func GenerateVideo(
 	msgQueue *mq.RabbitMQ,
 ) (string, error) {
 	conf, _ := config.LoadConfig("../../")
-	videoUrl := "http://127.0.0.1:8080/api/v1/videos"
+	//videoUrl := "http://127.0.0.1:8080/api/v1/videos"
 	timestamp := time.Now().Unix()
 	videoUrl, err := BuildUrl(conf.GenerateVideoBaseUrl, conf.VideoEndpoint)
 	if err != nil {
