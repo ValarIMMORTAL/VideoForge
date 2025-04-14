@@ -7,6 +7,7 @@
 package pb
 
 import (
+	_ "github.com/envoyproxy/protoc-gen-validate/validate"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 	timestamppb "google.golang.org/protobuf/types/known/timestamppb"
@@ -309,7 +310,7 @@ func (x *CreateUserResponse) GetEmail() string {
 type UserLoginRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	UserName      string                 `protobuf:"bytes,1,opt,name=UserName,proto3" json:"UserName,omitempty"`
-	PassWord      string                 `protobuf:"bytes,2,opt,name=passWord,proto3" json:"passWord,omitempty"`
+	Password      string                 `protobuf:"bytes,2,opt,name=Password,proto3" json:"Password,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -351,9 +352,9 @@ func (x *UserLoginRequest) GetUserName() string {
 	return ""
 }
 
-func (x *UserLoginRequest) GetPassWord() string {
+func (x *UserLoginRequest) GetPassword() string {
 	if x != nil {
-		return x.PassWord
+		return x.Password
 	}
 	return ""
 }
@@ -447,29 +448,31 @@ var File_user_proto protoreflect.FileDescriptor
 const file_user_proto_rawDesc = "" +
 	"\n" +
 	"\n" +
-	"user.proto\x12\x02pb\x1a\x1fgoogle/protobuf/timestamp.proto\"\x8b\x01\n" +
+	"user.proto\x12\x02pb\x1a\x17validate/validate.proto\x1a\x1fgoogle/protobuf/timestamp.proto\"\x8b\x01\n" +
 	"\x04User\x12\x16\n" +
 	"\x06userid\x18\x01 \x01(\x03R\x06userid\x12\x1a\n" +
 	"\busername\x18\x02 \x01(\tR\busername\x12\x14\n" +
 	"\x05email\x18\x03 \x01(\tR\x05email\x129\n" +
 	"\n" +
-	"created_at\x18\x04 \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\"=\n" +
-	"\x17RenewAccessTokenRequest\x12\"\n" +
-	"\fRefreshToken\x18\x01 \x01(\tR\fRefreshToken\"\x8a\x01\n" +
+	"created_at\x18\x04 \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\"G\n" +
+	"\x17RenewAccessTokenRequest\x12,\n" +
+	"\fRefreshToken\x18\x01 \x01(\tB\b\xfaB\x05r\x03\x98\x01 R\fRefreshToken\"\x8a\x01\n" +
 	"\x18RenewAccessTokenResponse\x12 \n" +
 	"\vAccessToken\x18\x01 \x01(\tR\vAccessToken\x12L\n" +
-	"\x13AccessTokenExpireAt\x18\x02 \x01(\v2\x1a.google.protobuf.TimestampR\x13AccessTokenExpireAt\"a\n" +
-	"\x11CreateUserRequest\x12\x1a\n" +
-	"\bUserName\x18\x01 \x01(\tR\bUserName\x12\x1a\n" +
-	"\bPassword\x18\x02 \x01(\tR\bPassword\x12\x14\n" +
-	"\x05Email\x18\x03 \x01(\tR\x05Email\"^\n" +
+	"\x13AccessTokenExpireAt\x18\x02 \x01(\v2\x1a.google.protobuf.TimestampR\x13AccessTokenExpireAt\"\x80\x01\n" +
+	"\x11CreateUserRequest\x12%\n" +
+	"\bUserName\x18\x01 \x01(\tB\t\xfaB\x06r\x04\x10\x01\x18\n" +
+	"R\bUserName\x12%\n" +
+	"\bPassword\x18\x02 \x01(\tB\t\xfaB\x06r\x04\x10\x01\x18\rR\bPassword\x12\x1d\n" +
+	"\x05Email\x18\x03 \x01(\tB\a\xfaB\x04r\x02`\x01R\x05Email\"^\n" +
 	"\x12CreateUserResponse\x12\x16\n" +
 	"\x06UserId\x18\x01 \x01(\x03R\x06UserId\x12\x1a\n" +
 	"\bUserName\x18\x02 \x01(\tR\bUserName\x12\x14\n" +
-	"\x05Email\x18\x03 \x01(\tR\x05Email\"J\n" +
-	"\x10UserLoginRequest\x12\x1a\n" +
-	"\bUserName\x18\x01 \x01(\tR\bUserName\x12\x1a\n" +
-	"\bpassWord\x18\x02 \x01(\tR\bpassWord\"\xc0\x02\n" +
+	"\x05Email\x18\x03 \x01(\tR\x05Email\"`\n" +
+	"\x10UserLoginRequest\x12%\n" +
+	"\bUserName\x18\x01 \x01(\tB\t\xfaB\x06r\x04\x10\x01\x18\n" +
+	"R\bUserName\x12%\n" +
+	"\bPassword\x18\x02 \x01(\tB\t\xfaB\x06r\x04\x10\x01\x18\rR\bPassword\"\xc0\x02\n" +
 	"\x11UserLoginResponse\x12\x1c\n" +
 	"\x04user\x18\x01 \x01(\v2\b.pb.UserR\x04user\x12\x1d\n" +
 	"\n" +

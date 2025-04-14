@@ -1,6 +1,7 @@
 syntax = "proto3";
 
 package pb;
+import "validate/validate.proto";
 import "google/protobuf/timestamp.proto";
 option go_package = "github.com/pule1234/VideoForge/pb;pb";
 
@@ -13,7 +14,7 @@ message User{
 }
 
 message RenewAccessTokenRequest {
-  string RefreshToken = 1;
+  string RefreshToken = 1 [(validate.rules).string = { len: 32}];
 }
 
 message RenewAccessTokenResponse {
@@ -22,9 +23,9 @@ message RenewAccessTokenResponse {
 }
 
 message CreateUserRequest {
-  string UserName = 1;
-  string Password = 2;
-  string Email = 3;
+  string UserName = 1 [(validate.rules).string = {min_len: 1, max_len: 10}];
+  string Password = 2 [(validate.rules).string = {min_len: 1, max_len: 13}];
+  string Email = 3 [(validate.rules).string = {email: true}];
 }
 
 message CreateUserResponse {
@@ -34,8 +35,8 @@ message CreateUserResponse {
 }
 
 message UserLoginRequest {
-  string UserName = 1;
-  string passWord = 2;
+  string UserName = 1 [(validate.rules).string = {min_len: 1, max_len: 10}];
+  string Password = 2 [(validate.rules).string = {min_len: 1, max_len: 13}];
 }
 
 message UserLoginResponse {

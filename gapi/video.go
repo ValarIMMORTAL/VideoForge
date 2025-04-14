@@ -5,12 +5,14 @@ import (
 	"github.com/pule1234/VideoForge/global"
 	"github.com/pule1234/VideoForge/internal/processor"
 	"github.com/pule1234/VideoForge/pb"
-	"google.golang.org/genproto/googleapis/rpc/errdetails"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
 
 func (server *Server) GenerateVideo(ctx context.Context, req *pb.GenerateVideoRequest) (resp *pb.GenerateVideoResponse, err error) {
+	if err := req.Validate(); err != nil {
+		return nil, status.Errorf(codes.InvalidArgument, "请求参数无效: %v", err)
+	}
 	payload, err := server.authorizeUser(ctx)
 	if err != nil {
 		return nil, status.Errorf(codes.PermissionDenied, "%v", err)
@@ -87,14 +89,4 @@ func (server *Server) GetVideos(ctx context.Context, req *pb.GetVideosRequest) (
 	return &pb.GetVideosResponse{
 		Videos: temp,
 	}, nil
-}
-
-func validateGenerateVideoRequest(req *pb.GenerateVideoRequest) (violiations []*errdetails.BadRequest_FieldViolation) {
-
-	return violiations
-}
-
-func validateGetVideosRequest(req *pb.GenerateVideoRequest) (violiations []*errdetails.BadRequest_FieldViolation) {
-
-	return violiations
 }
