@@ -4,7 +4,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/pule1234/VideoForge/global"
 	"github.com/pule1234/VideoForge/internal/processor"
-	"github.com/pule1234/VideoForge/token"
+	"github.com/pule1234/VideoForge/util"
 	"net/http"
 )
 
@@ -17,18 +17,11 @@ func (server *Server) generateVideo(c *gin.Context) {
 		return
 	}
 
-	payload, exists := c.Get(authorizationPayloadKey)
-	if !exists {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "authorization payload not found"})
+	userId, userName, err := util.GetUserByToken(c, authorizationPayloadKey)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	authPayload, ok := payload.(*token.Payload)
-	if !ok {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "invalid authorization payload"})
-		return
-	}
-	userName := authPayload.Username
-	userId := authPayload.UserId
 	arg := processor.VideoParams{
 		VideoSubject:        req.VideoSubject,
 		VideoScript:         req.VideoScript,
@@ -82,19 +75,13 @@ func (server *Server) getVideos(c *gin.Context) {
 		return
 	}
 
-	payload, exists := c.Get(authorizationPayloadKey)
-	if !exists {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "authorization payload not found"})
+	userID, _, err := util.GetUserByToken(c, authorizationPayloadKey)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	authPayload, ok := payload.(*token.Payload)
-	if !ok {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "invalid authorization payload"})
-		return
-	}
-	userId := authPayload.UserId
 
-	videos, err := server.store.GetVideosByUid(c, userId)
+	videos, err := server.store.GetVideosByUid(c, userID)
 	if err != nil {
 		return
 	}

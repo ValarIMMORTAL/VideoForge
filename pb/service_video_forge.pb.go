@@ -26,14 +26,15 @@ var File_service_video_forge_proto protoreflect.FileDescriptor
 const file_service_video_forge_proto_rawDesc = "" +
 	"\n" +
 	"\x19service_video_forge.proto\x12\x02pb\x1a\n" +
-	"user.proto\x1a\vvideo.proto\x1a\x1cgoogle/api/annotations.proto2\xdf\x03\n" +
+	"user.proto\x1a\vvideo.proto\x1a\x0fpublisher.proto\x1a\x1cgoogle/api/annotations.proto2\xbc\x04\n" +
 	"\vVideosForge\x12i\n" +
 	"\x10RenewAccessToken\x12\x1b.pb.RenewAccessTokenRequest\x1a\x1c.pb.RenewAccessTokenResponse\"\x1a\x82\xd3\xe4\x93\x02\x14:\x01*\"\x0f/v1/renew_token\x12S\n" +
 	"\tUserLogin\x12\x14.pb.UserLoginRequest\x1a\x15.pb.UserLoginResponse\"\x19\x82\xd3\xe4\x93\x02\x13:\x01*\"\x0e/v1/user_login\x12W\n" +
 	"\n" +
 	"CreateUser\x12\x15.pb.CreateUserRequest\x1a\x16.pb.CreateUserResponse\"\x1a\x82\xd3\xe4\x93\x02\x14:\x01*\"\x0f/v1/create_user\x12c\n" +
 	"\rGenerateVideo\x12\x18.pb.GenerateVideoRequest\x1a\x19.pb.GenerateVideoResponse\"\x1d\x82\xd3\xe4\x93\x02\x17:\x01*\"\x12/v1/generate_video\x12R\n" +
-	"\tGetVideos\x12\x14.pb.GetVideosRequest\x1a\x15.pb.GetVideosResponse\"\x18\x82\xd3\xe4\x93\x02\x12:\x01*\"\r/v1/get_videoB&Z$github.com/pule1234/VideoForge/pb;pbb\x06proto3"
+	"\tGetVideos\x12\x14.pb.GetVideosRequest\x1a\x15.pb.GetVideosResponse\"\x18\x82\xd3\xe4\x93\x02\x12:\x01*\"\r/v1/get_video\x12[\n" +
+	"\vUploadVideo\x12\x16.pb.UploadVideoRequest\x1a\x17.pb.UploadVideoResponse\"\x1b\x82\xd3\xe4\x93\x02\x15:\x01*\"\x10/v1/upload_videoB&Z$github.com/pule1234/VideoForge/pb;pbb\x06proto3"
 
 var file_service_video_forge_proto_goTypes = []any{
 	(*RenewAccessTokenRequest)(nil),  // 0: pb.RenewAccessTokenRequest
@@ -41,28 +42,32 @@ var file_service_video_forge_proto_goTypes = []any{
 	(*CreateUserRequest)(nil),        // 2: pb.CreateUserRequest
 	(*GenerateVideoRequest)(nil),     // 3: pb.GenerateVideoRequest
 	(*GetVideosRequest)(nil),         // 4: pb.GetVideosRequest
-	(*RenewAccessTokenResponse)(nil), // 5: pb.RenewAccessTokenResponse
-	(*UserLoginResponse)(nil),        // 6: pb.UserLoginResponse
-	(*CreateUserResponse)(nil),       // 7: pb.CreateUserResponse
-	(*GenerateVideoResponse)(nil),    // 8: pb.GenerateVideoResponse
-	(*GetVideosResponse)(nil),        // 9: pb.GetVideosResponse
+	(*UploadVideoRequest)(nil),       // 5: pb.UploadVideoRequest
+	(*RenewAccessTokenResponse)(nil), // 6: pb.RenewAccessTokenResponse
+	(*UserLoginResponse)(nil),        // 7: pb.UserLoginResponse
+	(*CreateUserResponse)(nil),       // 8: pb.CreateUserResponse
+	(*GenerateVideoResponse)(nil),    // 9: pb.GenerateVideoResponse
+	(*GetVideosResponse)(nil),        // 10: pb.GetVideosResponse
+	(*UploadVideoResponse)(nil),      // 11: pb.UploadVideoResponse
 }
 var file_service_video_forge_proto_depIdxs = []int32{
-	0, // 0: pb.VideosForge.RenewAccessToken:input_type -> pb.RenewAccessTokenRequest
-	1, // 1: pb.VideosForge.UserLogin:input_type -> pb.UserLoginRequest
-	2, // 2: pb.VideosForge.CreateUser:input_type -> pb.CreateUserRequest
-	3, // 3: pb.VideosForge.GenerateVideo:input_type -> pb.GenerateVideoRequest
-	4, // 4: pb.VideosForge.GetVideos:input_type -> pb.GetVideosRequest
-	5, // 5: pb.VideosForge.RenewAccessToken:output_type -> pb.RenewAccessTokenResponse
-	6, // 6: pb.VideosForge.UserLogin:output_type -> pb.UserLoginResponse
-	7, // 7: pb.VideosForge.CreateUser:output_type -> pb.CreateUserResponse
-	8, // 8: pb.VideosForge.GenerateVideo:output_type -> pb.GenerateVideoResponse
-	9, // 9: pb.VideosForge.GetVideos:output_type -> pb.GetVideosResponse
-	5, // [5:10] is the sub-list for method output_type
-	0, // [0:5] is the sub-list for method input_type
-	0, // [0:0] is the sub-list for extension type_name
-	0, // [0:0] is the sub-list for extension extendee
-	0, // [0:0] is the sub-list for field type_name
+	0,  // 0: pb.VideosForge.RenewAccessToken:input_type -> pb.RenewAccessTokenRequest
+	1,  // 1: pb.VideosForge.UserLogin:input_type -> pb.UserLoginRequest
+	2,  // 2: pb.VideosForge.CreateUser:input_type -> pb.CreateUserRequest
+	3,  // 3: pb.VideosForge.GenerateVideo:input_type -> pb.GenerateVideoRequest
+	4,  // 4: pb.VideosForge.GetVideos:input_type -> pb.GetVideosRequest
+	5,  // 5: pb.VideosForge.UploadVideo:input_type -> pb.UploadVideoRequest
+	6,  // 6: pb.VideosForge.RenewAccessToken:output_type -> pb.RenewAccessTokenResponse
+	7,  // 7: pb.VideosForge.UserLogin:output_type -> pb.UserLoginResponse
+	8,  // 8: pb.VideosForge.CreateUser:output_type -> pb.CreateUserResponse
+	9,  // 9: pb.VideosForge.GenerateVideo:output_type -> pb.GenerateVideoResponse
+	10, // 10: pb.VideosForge.GetVideos:output_type -> pb.GetVideosResponse
+	11, // 11: pb.VideosForge.UploadVideo:output_type -> pb.UploadVideoResponse
+	6,  // [6:12] is the sub-list for method output_type
+	0,  // [0:6] is the sub-list for method input_type
+	0,  // [0:0] is the sub-list for extension type_name
+	0,  // [0:0] is the sub-list for extension extendee
+	0,  // [0:0] is the sub-list for field type_name
 }
 
 func init() { file_service_video_forge_proto_init() }
@@ -72,6 +77,7 @@ func file_service_video_forge_proto_init() {
 	}
 	file_user_proto_init()
 	file_video_proto_init()
+	file_publisher_proto_init()
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{

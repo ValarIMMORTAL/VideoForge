@@ -1,0 +1,19 @@
+syntax = "proto3";
+
+package pb;
+import "validate/validate.proto"; // PGV 验证规则
+option go_package = "github.com/pule1234/VideoForge/pb;pb";
+
+message UploadVideoRequest {
+  string platform = 1 [(validate.rules).string = { min_len: 1}];
+  string title = 2 [(validate.rules).string = {min_len : 1}];
+  string description = 3;
+  bytes video = 4;
+  int64 video_id = 5;
+}
+
+message UploadVideoResponse {
+  string message = 1;
+  string video_id = 2;
+  string platform = 3;
+}

@@ -17,6 +17,7 @@ where user_id = $1
 and provider = $2
 and api = $3
 and delete_at is null
+order by id desc
 `
 
 type GetOauth2TokenParams struct {

@@ -17,7 +17,9 @@ from oauth2_tokens
 where user_id = $1
 and provider = $2
 and api = $3
-and delete_at is null;
+and delete_at is null
+order by id desc
+;
 
 -- name: UpdateAccessToken :one
 update oauth2_tokens
