@@ -7,7 +7,6 @@
 package pb
 
 import (
-	_ "github.com/envoyproxy/protoc-gen-validate/validate"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 	reflect "reflect"
@@ -24,11 +23,14 @@ const (
 
 type UploadVideoRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Platform      string                 `protobuf:"bytes,1,opt,name=platform,proto3" json:"platform,omitempty"`
+	TempDir       string                 `protobuf:"bytes,1,opt,name=tempDir,proto3" json:"tempDir,omitempty"`
 	Title         string                 `protobuf:"bytes,2,opt,name=title,proto3" json:"title,omitempty"`
-	Description   string                 `protobuf:"bytes,3,opt,name=description,proto3" json:"description,omitempty"`
-	Video         []byte                 `protobuf:"bytes,4,opt,name=video,proto3" json:"video,omitempty"`
-	VideoId       int64                  `protobuf:"varint,5,opt,name=video_id,json=videoId,proto3" json:"video_id,omitempty"`
+	UserName      string                 `protobuf:"bytes,3,opt,name=user_name,json=userName,proto3" json:"user_name,omitempty"`
+	Bucket        string                 `protobuf:"bytes,4,opt,name=bucket,proto3" json:"bucket,omitempty"`
+	Subscribe     int64                  `protobuf:"varint,5,opt,name=subscribe,proto3" json:"subscribe,omitempty"`
+	Domain        string                 `protobuf:"bytes,6,opt,name=domain,proto3" json:"domain,omitempty"`
+	FileName      string                 `protobuf:"bytes,7,opt,name=file_name,json=fileName,proto3" json:"file_name,omitempty"`
+	ObjectName    string                 `protobuf:"bytes,8,opt,name=object_name,json=objectName,proto3" json:"object_name,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -63,9 +65,9 @@ func (*UploadVideoRequest) Descriptor() ([]byte, []int) {
 	return file_publisher_proto_rawDescGZIP(), []int{0}
 }
 
-func (x *UploadVideoRequest) GetPlatform() string {
+func (x *UploadVideoRequest) GetTempDir() string {
 	if x != nil {
-		return x.Platform
+		return x.TempDir
 	}
 	return ""
 }
@@ -77,25 +79,46 @@ func (x *UploadVideoRequest) GetTitle() string {
 	return ""
 }
 
-func (x *UploadVideoRequest) GetDescription() string {
+func (x *UploadVideoRequest) GetUserName() string {
 	if x != nil {
-		return x.Description
+		return x.UserName
 	}
 	return ""
 }
 
-func (x *UploadVideoRequest) GetVideo() []byte {
+func (x *UploadVideoRequest) GetBucket() string {
 	if x != nil {
-		return x.Video
+		return x.Bucket
 	}
-	return nil
+	return ""
 }
 
-func (x *UploadVideoRequest) GetVideoId() int64 {
+func (x *UploadVideoRequest) GetSubscribe() int64 {
 	if x != nil {
-		return x.VideoId
+		return x.Subscribe
 	}
 	return 0
+}
+
+func (x *UploadVideoRequest) GetDomain() string {
+	if x != nil {
+		return x.Domain
+	}
+	return ""
+}
+
+func (x *UploadVideoRequest) GetFileName() string {
+	if x != nil {
+		return x.FileName
+	}
+	return ""
+}
+
+func (x *UploadVideoRequest) GetObjectName() string {
+	if x != nil {
+		return x.ObjectName
+	}
+	return ""
 }
 
 type UploadVideoResponse struct {
@@ -162,13 +185,17 @@ var File_publisher_proto protoreflect.FileDescriptor
 
 const file_publisher_proto_rawDesc = "" +
 	"\n" +
-	"\x0fpublisher.proto\x12\x02pb\x1a\x17validate/validate.proto\"\xab\x01\n" +
-	"\x12UploadVideoRequest\x12#\n" +
-	"\bplatform\x18\x01 \x01(\tB\a\xfaB\x04r\x02\x10\x01R\bplatform\x12\x1d\n" +
-	"\x05title\x18\x02 \x01(\tB\a\xfaB\x04r\x02\x10\x01R\x05title\x12 \n" +
-	"\vdescription\x18\x03 \x01(\tR\vdescription\x12\x14\n" +
-	"\x05video\x18\x04 \x01(\fR\x05video\x12\x19\n" +
-	"\bvideo_id\x18\x05 \x01(\x03R\avideoId\"f\n" +
+	"\x0fpublisher.proto\x12\x02pb\"\xed\x01\n" +
+	"\x12UploadVideoRequest\x12\x18\n" +
+	"\atempDir\x18\x01 \x01(\tR\atempDir\x12\x14\n" +
+	"\x05title\x18\x02 \x01(\tR\x05title\x12\x1b\n" +
+	"\tuser_name\x18\x03 \x01(\tR\buserName\x12\x16\n" +
+	"\x06bucket\x18\x04 \x01(\tR\x06bucket\x12\x1c\n" +
+	"\tsubscribe\x18\x05 \x01(\x03R\tsubscribe\x12\x16\n" +
+	"\x06domain\x18\x06 \x01(\tR\x06domain\x12\x1b\n" +
+	"\tfile_name\x18\a \x01(\tR\bfileName\x12\x1f\n" +
+	"\vobject_name\x18\b \x01(\tR\n" +
+	"objectName\"f\n" +
 	"\x13UploadVideoResponse\x12\x18\n" +
 	"\amessage\x18\x01 \x01(\tR\amessage\x12\x19\n" +
 	"\bvideo_id\x18\x02 \x01(\tR\avideoId\x12\x1a\n" +

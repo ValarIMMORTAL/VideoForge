@@ -57,33 +57,21 @@ func (m *UploadVideoRequest) validate(all bool) error {
 
 	var errors []error
 
-	if utf8.RuneCountInString(m.GetPlatform()) < 1 {
-		err := UploadVideoRequestValidationError{
-			field:  "Platform",
-			reason: "value length must be at least 1 runes",
-		}
-		if !all {
-			return err
-		}
-		errors = append(errors, err)
-	}
+	// no validation rules for TempDir
 
-	if utf8.RuneCountInString(m.GetTitle()) < 1 {
-		err := UploadVideoRequestValidationError{
-			field:  "Title",
-			reason: "value length must be at least 1 runes",
-		}
-		if !all {
-			return err
-		}
-		errors = append(errors, err)
-	}
+	// no validation rules for Title
 
-	// no validation rules for Description
+	// no validation rules for UserName
 
-	// no validation rules for Video
+	// no validation rules for Bucket
 
-	// no validation rules for VideoId
+	// no validation rules for Subscribe
+
+	// no validation rules for Domain
+
+	// no validation rules for FileName
+
+	// no validation rules for ObjectName
 
 	if len(errors) > 0 {
 		return UploadVideoRequestMultiError(errors)
