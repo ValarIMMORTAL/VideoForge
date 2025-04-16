@@ -58,7 +58,6 @@ func (y *YouTubePublisher) UploadVideo(ctx context.Context, filePath, title, des
 		upload.Snippet.Tags = strings.Split(keywords, ",")
 	}
 	call := service.Videos.Insert([]string{"snippet", "status"}, upload)
-
 	file, err := os.Open(filePath)
 	defer file.Close()
 	if err != nil {
@@ -70,6 +69,27 @@ func (y *YouTubePublisher) UploadVideo(ctx context.Context, filePath, title, des
 		return "", err
 	}
 
+	client, err = getClient(ctx, youtube.YoutubeScope, userId, store)
+	if err != nil {
+		return "", err
+	}
+	service, err = youtube.New(client)
+	video := &youtube.Video{
+		Id: response.Id,
+		Status: &youtube.VideoStatus{
+			PrivacyStatus: "public", // 关键设置
+			// 可选：同时设置其他状态字段
+			// Embeddable:       true,
+			// License:          "youtube",
+			// PublicStatsViewable: true,
+		},
+	}
+
+	updateCall := service.Videos.Update([]string{"snippet", "status"}, video)
+	_, err = updateCall.Do()
+	if err != nil {
+		return "", err
+	}
 	return response.Id, nil
 }
 

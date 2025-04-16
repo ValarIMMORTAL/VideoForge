@@ -79,6 +79,7 @@ func (server *Server) UploadVideo(c *gin.Context) {
 			return
 		}
 	}
+	fmt.Println(tempFilePath)
 	defer os.Remove(tempFilePath)
 	// 4. 调用 Publisher 上传
 	//var userID int32 = 1
