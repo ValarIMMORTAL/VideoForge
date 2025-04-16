@@ -7,10 +7,9 @@ import (
 	"github.com/pule1234/VideoForge/config"
 	db "github.com/pule1234/VideoForge/db/sqlc"
 	"github.com/pule1234/VideoForge/internal/models"
-	"log"
-	"time"
-
 	"github.com/pule1234/VideoForge/mq"
+	"github.com/rs/zerolog/log"
+	"time"
 
 	"github.com/gocolly/colly"
 )

@@ -56,10 +56,5 @@ func loadPlatformConfigs(store db.Store) map[string]PlatformConfig {
 		}
 	}
 
-	marshal, err := json.Marshal(platformConfigs)
-	if err != nil {
-		return nil
-	}
-	fmt.Println("marshal:", string(marshal))
 	return platformConfigs
 }

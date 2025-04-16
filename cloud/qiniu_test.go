@@ -40,5 +40,5 @@ func TestQiNiu(t *testing.T) {
 	//	return
 	//}
 
-	QNManager.DownloadFile()
+	//QNManager.DownloadFile()
 }

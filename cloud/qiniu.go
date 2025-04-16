@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/pule1234/VideoForge/config"
 	db "github.com/pule1234/VideoForge/db/sqlc"
 	"github.com/qiniu/go-sdk/v7/storagev2/credentials"
 	"github.com/qiniu/go-sdk/v7/storagev2/downloader"
@@ -114,7 +113,7 @@ func (q *QiNiu) GetAllFileByUser(ctx context.Context, bucketName string, user_id
 
 // 下载文件
 func (q *QiNiu) DownloadFile(
-	conf config.Config,
+	tempDir string,
 	fileName, userName, bucket string,
 	subscribe int64,
 	domains ...string,
@@ -125,7 +124,7 @@ func (q *QiNiu) DownloadFile(
 	}
 	urlsProvider := downloader.NewStaticDomainBasedURLsProvider(ds)
 	//localFile := "/Users/a0000/111.mp4"
-	localFile := conf.TempDir + fileName + "_" + userName + "_" + fmt.Sprintf("%d", subscribe) + ".mp4"
+	localFile := tempDir + fileName + "_" + userName + "_" + fmt.Sprintf("%d", subscribe) + ".mp4"
 	//bucket := "videofore-videos"
 	//objectName := "为什么要运动.mp4"
 	objectName := fileName + userName + fmt.Sprintf("%d", subscribe) + ".mp4"

@@ -62,7 +62,7 @@ func (server *Server) UserLogin(ctx context.Context, req *pb.UserLoginRequest) (
 	}
 
 	//check password
-	err = util.CheckPassword(req.PassWord, user.HashedPassword)
+	err = util.CheckPassword(req.Password, user.HashedPassword)
 	if err != nil {
 		return nil, status.Errorf(codes.InvalidArgument, err.Error())
 	}
@@ -126,7 +126,7 @@ func validateUserLogin(req *pb.UserLoginRequest) (violiations []*errdetails.BadR
 	if err != nil {
 		violiations = append(violiations, fieldViolation("username", err))
 	}
-	err = val.ValidatePassword(req.PassWord)
+	err = val.ValidatePassword(req.Password)
 	if err != nil {
 		violiations = append(violiations, fieldViolation("password", err))
 	}

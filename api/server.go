@@ -9,7 +9,9 @@ import (
 	db "github.com/pule1234/VideoForge/db/sqlc"
 	"github.com/pule1234/VideoForge/internal/publisher"
 	"github.com/pule1234/VideoForge/mq"
+	"github.com/pule1234/VideoForge/pb"
 	"github.com/pule1234/VideoForge/token"
+	"google.golang.org/grpc"
 )
 
 type Server struct {
@@ -22,6 +24,7 @@ type Server struct {
 	publisherFactory *publisher.PublisherFactory
 	qnManager        *cloud.QiNiu
 	mq               *mq.RabbitMQ
+	grpcClient       pb.VideosForgeClient
 }
 
 func NewServer(conf config.Config, store db.Store, factory *publisher.PublisherFactory) (*Server, error) {
@@ -29,6 +32,12 @@ func NewServer(conf config.Config, store db.Store, factory *publisher.PublisherF
 	if err != nil {
 		return nil, fmt.Errorf("cannot create token maker: %w", err)
 	}
+	fmt.Println("ready grpc client success")
+	conn, err := grpc.Dial("localhost:9090", grpc.WithInsecure())
+	if err != nil {
+		return nil, fmt.Errorf("did not connect: %v", err)
+	}
+	fmt.Println("connect grpc client success")
 	server := &Server{
 		config:           conf,
 		store:            store,
@@ -38,6 +47,7 @@ func NewServer(conf config.Config, store db.Store, factory *publisher.PublisherF
 		publisherFactory: factory,
 		tokenMaker:       tokenMaker,
 		mq:               mq.GlobalRabbitMQ,
+		grpcClient:       pb.NewVideosForgeClient(conn),
 	}
 	server.setupRouter()
 
@@ -57,6 +67,7 @@ func (server *Server) setupRouter() {
 	authRoutes.GET("/getVideos", server.getVideos)
 	authRoutes.POST("/generateVideo", server.generateVideo)
 	authRoutes.POST("/upload-video", server.UploadVideo)
+	authRoutes.POST("/upload-video-grpc", server.UploadVideoGrpc)
 	server.router = router
 }
 

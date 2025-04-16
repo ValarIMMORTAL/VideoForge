@@ -30,7 +30,9 @@ type UploadVideoRequest struct {
 	Subscribe     int64                  `protobuf:"varint,5,opt,name=subscribe,proto3" json:"subscribe,omitempty"`
 	Domain        string                 `protobuf:"bytes,6,opt,name=domain,proto3" json:"domain,omitempty"`
 	FileName      string                 `protobuf:"bytes,7,opt,name=file_name,json=fileName,proto3" json:"file_name,omitempty"`
-	ObjectName    string                 `protobuf:"bytes,8,opt,name=object_name,json=objectName,proto3" json:"object_name,omitempty"`
+	PlatformName  string                 `protobuf:"bytes,8,opt,name=platform_name,json=platformName,proto3" json:"platform_name,omitempty"`
+	UserId        int64                  `protobuf:"varint,9,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
+	Description   string                 `protobuf:"bytes,10,opt,name=description,proto3" json:"description,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -114,18 +116,30 @@ func (x *UploadVideoRequest) GetFileName() string {
 	return ""
 }
 
-func (x *UploadVideoRequest) GetObjectName() string {
+func (x *UploadVideoRequest) GetPlatformName() string {
 	if x != nil {
-		return x.ObjectName
+		return x.PlatformName
+	}
+	return ""
+}
+
+func (x *UploadVideoRequest) GetUserId() int64 {
+	if x != nil {
+		return x.UserId
+	}
+	return 0
+}
+
+func (x *UploadVideoRequest) GetDescription() string {
+	if x != nil {
+		return x.Description
 	}
 	return ""
 }
 
 type UploadVideoResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Message       string                 `protobuf:"bytes,1,opt,name=message,proto3" json:"message,omitempty"`
-	VideoId       string                 `protobuf:"bytes,2,opt,name=video_id,json=videoId,proto3" json:"video_id,omitempty"`
-	Platform      string                 `protobuf:"bytes,3,opt,name=platform,proto3" json:"platform,omitempty"`
+	VideoId       string                 `protobuf:"bytes,1,opt,name=video_id,json=videoId,proto3" json:"video_id,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -160,23 +174,9 @@ func (*UploadVideoResponse) Descriptor() ([]byte, []int) {
 	return file_publisher_proto_rawDescGZIP(), []int{1}
 }
 
-func (x *UploadVideoResponse) GetMessage() string {
-	if x != nil {
-		return x.Message
-	}
-	return ""
-}
-
 func (x *UploadVideoResponse) GetVideoId() string {
 	if x != nil {
 		return x.VideoId
-	}
-	return ""
-}
-
-func (x *UploadVideoResponse) GetPlatform() string {
-	if x != nil {
-		return x.Platform
 	}
 	return ""
 }
@@ -185,7 +185,7 @@ var File_publisher_proto protoreflect.FileDescriptor
 
 const file_publisher_proto_rawDesc = "" +
 	"\n" +
-	"\x0fpublisher.proto\x12\x02pb\"\xed\x01\n" +
+	"\x0fpublisher.proto\x12\x02pb\"\xac\x02\n" +
 	"\x12UploadVideoRequest\x12\x18\n" +
 	"\atempDir\x18\x01 \x01(\tR\atempDir\x12\x14\n" +
 	"\x05title\x18\x02 \x01(\tR\x05title\x12\x1b\n" +
@@ -193,13 +193,13 @@ const file_publisher_proto_rawDesc = "" +
 	"\x06bucket\x18\x04 \x01(\tR\x06bucket\x12\x1c\n" +
 	"\tsubscribe\x18\x05 \x01(\x03R\tsubscribe\x12\x16\n" +
 	"\x06domain\x18\x06 \x01(\tR\x06domain\x12\x1b\n" +
-	"\tfile_name\x18\a \x01(\tR\bfileName\x12\x1f\n" +
-	"\vobject_name\x18\b \x01(\tR\n" +
-	"objectName\"f\n" +
-	"\x13UploadVideoResponse\x12\x18\n" +
-	"\amessage\x18\x01 \x01(\tR\amessage\x12\x19\n" +
-	"\bvideo_id\x18\x02 \x01(\tR\avideoId\x12\x1a\n" +
-	"\bplatform\x18\x03 \x01(\tR\bplatformB&Z$github.com/pule1234/VideoForge/pb;pbb\x06proto3"
+	"\tfile_name\x18\a \x01(\tR\bfileName\x12#\n" +
+	"\rplatform_name\x18\b \x01(\tR\fplatformName\x12\x17\n" +
+	"\auser_id\x18\t \x01(\x03R\x06userId\x12 \n" +
+	"\vdescription\x18\n" +
+	" \x01(\tR\vdescription\"0\n" +
+	"\x13UploadVideoResponse\x12\x19\n" +
+	"\bvideo_id\x18\x01 \x01(\tR\avideoIdB&Z$github.com/pule1234/VideoForge/pb;pbb\x06proto3"
 
 var (
 	file_publisher_proto_rawDescOnce sync.Once

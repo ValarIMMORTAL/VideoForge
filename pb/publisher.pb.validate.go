@@ -71,7 +71,11 @@ func (m *UploadVideoRequest) validate(all bool) error {
 
 	// no validation rules for FileName
 
-	// no validation rules for ObjectName
+	// no validation rules for PlatformName
+
+	// no validation rules for UserId
+
+	// no validation rules for Description
 
 	if len(errors) > 0 {
 		return UploadVideoRequestMultiError(errors)
@@ -175,11 +179,7 @@ func (m *UploadVideoResponse) validate(all bool) error {
 
 	var errors []error
 
-	// no validation rules for Message
-
 	// no validation rules for VideoId
-
-	// no validation rules for Platform
 
 	if len(errors) > 0 {
 		return UploadVideoResponseMultiError(errors)

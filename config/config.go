@@ -29,6 +29,8 @@ type Config struct {
 	VideoPath            string        `mapstructure:"VIDEOPATH"`
 	CdnDomain            string        `mapstructure:"CDNDOMAIN"`
 	TempDir              string        `mapstructure:"TEMPDIR"`
+	GRPCServerAddress    string        `mapstructure:"GRPC_SERVER_ADDRESS"`
+	GRPCConnectAddress   string        `mapstructure:"GRPC_CONNECT_ADDRESS"`
 }
 
 func LoadConfig(path string) (*Config, error) {
