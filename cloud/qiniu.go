@@ -11,8 +11,8 @@ import (
 	"github.com/qiniu/go-sdk/v7/storagev2/http_client"
 	"github.com/qiniu/go-sdk/v7/storagev2/objects"
 	"github.com/qiniu/go-sdk/v7/storagev2/uploader"
+	"io"
 	"log"
-	"time"
 )
 
 type QiNiu struct {
@@ -24,11 +24,11 @@ type QiNiu struct {
 func NewQiNiu(accessKey, secretKey string) *QiNiu {
 	mac := credentials.NewCredentials(accessKey, secretKey)
 	upload := uploader.NewUploadManager(&uploader.UploadManagerOptions{
-		Options: http_client.Options{
-			Credentials: mac,
-		},
+		Options: http_client.Options{Credentials: mac},
 	})
-
+	if upload == nil {
+		log.Fatal("Failed to create upload manager")
+	}
 	object := objects.NewObjectsManager(&objects.ObjectsManagerOptions{
 		Options: http_client.Options{Credentials: mac},
 	})
@@ -56,6 +56,23 @@ func (q *QiNiu) UploadFile(ctx context.Context, localFile, bucketName, fileName,
 	if err != nil {
 		return err
 	}
+	return nil
+}
+
+// 数据流上传
+func (q *QiNiu) UploadDataSource(ctx context.Context, reader io.Reader, bucketName, fileName, objectsName string) error {
+	err := q.UploadManager.UploadReader(ctx, reader, &uploader.ObjectOptions{
+		BucketName: bucketName,
+		ObjectName: &objectsName,
+		CustomVars: map[string]string{
+			"name": fileName,
+		},
+		FileName: fileName,
+	}, nil)
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -106,10 +123,9 @@ func (q *QiNiu) DownloadFile(
 	for _, domain := range domains {
 		ds = append(ds, domain)
 	}
-	timestamp := time.Now().Unix()
 	urlsProvider := downloader.NewStaticDomainBasedURLsProvider(ds)
 	//localFile := "/Users/a0000/111.mp4"
-	localFile := conf.TempDir + fileName + "/" + userName + "_" + fmt.Sprintf("%d", timestamp) + ".mp4"
+	localFile := conf.TempDir + fileName + "_" + userName + "_" + fmt.Sprintf("%d", subscribe) + ".mp4"
 	//bucket := "videofore-videos"
 	//objectName := "为什么要运动.mp4"
 	objectName := fileName + userName + fmt.Sprintf("%d", subscribe) + ".mp4"

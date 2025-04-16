@@ -15,7 +15,7 @@ var (
 func InitQiNiu(store db.Store) {
 	thirdKey, err := store.GetThirdKeyByName(context.Background(), "qiniu")
 	if err != nil {
-		log.Println("获取七牛云密钥失败")
+		log.Println("获取七牛云密钥失败" + err.Error())
 		return
 	}
 	once.Do(func() {

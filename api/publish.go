@@ -6,8 +6,9 @@ import (
 	"github.com/pule1234/VideoForge/util"
 	"net/http"
 	"os"
-	"path/filepath"
 	"strconv"
+	"strings"
+	"time"
 )
 
 func (server *Server) UploadVideo(c *gin.Context) {
@@ -57,19 +58,25 @@ func (server *Server) UploadVideo(c *gin.Context) {
 			return
 		}
 	} else {
-		// 保存到临时文件
-		tempDir := "tmp"
-		if err := os.MkdirAll(tempDir, 0777); err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "创建临时目录失败"})
+		srcFile, err := file.Open()
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "文件打开失败"})
 			return
 		}
-
-		tempFilePath = filepath.Join(tempDir, file.Filename)
-		if err = c.SaveUploadedFile(file, tempFilePath); err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "保存文件失败: " + err.Error()})
+		defer srcFile.Close()
+		subscribe := time.Now().Unix()
+		parts := strings.Split(file.Filename, ".")
+		objectName := parts[0] + userName + fmt.Sprintf("%d", subscribe) + ".mp4"
+		err = server.qnManager.UploadDataSource(c, srcFile, "videofore-videos", file.Filename, objectName)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "上传文件失败" + err.Error()})
 			return
 		}
-		fmt.Println("文件路径 : " + tempFilePath)
+		tempFilePath, err = server.qnManager.DownloadFile(server.config, parts[0], userName, "videofore-videos", subscribe, "su15t494p.hn-bkt.clouddn.com")
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "上传文件失败: " + err.Error()})
+			return
+		}
 	}
 	defer os.Remove(tempFilePath)
 	// 4. 调用 Publisher 上传
