@@ -52,9 +52,7 @@ func main() {
 	go runGinServer(*loadConfig, q, factory)
 
 	log.Info().Msg("启动gRPC服务器...")
-	go runGrpcServer(*loadConfig, q, factory)
-
-	select {}
+	runGrpcServer(*loadConfig, q, factory)
 }
 
 func runGinServer(config config.Config, store db.Store, factory *publisher.PublisherFactory) {
