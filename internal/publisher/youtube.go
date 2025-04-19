@@ -77,7 +77,7 @@ func (y *YouTubePublisher) UploadVideo(ctx context.Context, filePath, title, des
 	video := &youtube.Video{
 		Id: response.Id,
 		Status: &youtube.VideoStatus{
-			PrivacyStatus: "public", // 关键设置
+			PrivacyStatus: "public",
 			// 可选：同时设置其他状态字段
 			// Embeddable:       true,
 			// License:          "youtube",
