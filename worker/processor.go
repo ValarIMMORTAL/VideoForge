@@ -1,9 +1,10 @@
 package worker
 
 import (
+	"context"
+	"encoding/json"
+	"fmt"
 	"github.com/hibiken/asynq"
-	db "github.com/pule1234/VideoForge/db/sqlc"
-	"github.com/redis/go-redis/v9"
 )
 
 const (
@@ -11,30 +12,45 @@ const (
 	QueueDefault  = "default"
 )
 
-type TaskProcessor interface {
-	Start() error
-	// todo  统一的任务处理函数
+type TaskProcessor struct {
+	mux      *asynq.ServeMux
+	registry map[string]func(context.Context, interface{}) error
 }
 
-type RedisTaskProcessor struct {
-	server *asynq.Server
-	store  db.Store
-}
-
-func NewRedisTaskProcessor(redisOpt asynq.RedisClientOpt, store db.Store) *RedisTaskProcessor {
-	logger := NewLogger()
-	redis.SetLogger(logger)
-	server := asynq.NewServer(
-		redisOpt,
-		asynq.Config{Queues: map[string]int{
-			QueueCritical: 10,
-			QueueDefault:  5,
-		},
-			Logger: logger,
-		})
-
-	return &RedisTaskProcessor{
-		server: server,
-		store:  store,
+func NewTaskProcessor() *TaskProcessor {
+	mux := asynq.NewServeMux()
+	processor := &TaskProcessor{
+		mux:      mux,
+		registry: make(map[string]func(context.Context, interface{}) error),
 	}
+	//动态任务
+	mux.HandleFunc("dynamic_task", processor.handleDynamicTask)
+	return processor
+}
+
+// 注册任务
+func (p *TaskProcessor) Register(funcName string, handler func(context.Context, interface{}) error) {
+	p.registry[funcName] = handler
+}
+
+func (p *TaskProcessor) handleDynamicTask(ctx context.Context, task *asynq.Task) error {
+	var dynTask DynamicTask
+	if err := json.Unmarshal(task.Payload(), &dynTask); err != nil {
+		return fmt.Errorf("failed to unmarshal dynamic task: %w", err)
+	}
+
+	handler, ok := p.registry[dynTask.FuncName]
+	if !ok {
+		return fmt.Errorf("no handler registered for function: %s", dynTask.FuncName)
+	}
+
+	return handler(ctx, dynTask.Payload)
+}
+
+func (p *TaskProcessor) Start(redisOpt asynq.RedisClientOpt) error {
+	server := asynq.NewServer(redisOpt, asynq.Config{
+		Concurrency: 10,
+	})
+	// 运行任务
+	return server.Run(p.mux)
 }
