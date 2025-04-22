@@ -11,6 +11,7 @@ import (
 	"github.com/pule1234/VideoForge/mq"
 	"github.com/pule1234/VideoForge/pb"
 	"github.com/pule1234/VideoForge/token"
+	"github.com/pule1234/VideoForge/worker"
 	"google.golang.org/grpc"
 )
 
@@ -25,9 +26,11 @@ type Server struct {
 	qnManager        *cloud.QiNiu
 	mq               *mq.RabbitMQ
 	grpcClient       pb.VideosForgeClient
+	taskDistributor  *worker.TaskDistributor
+	taskprocessor    *worker.TaskProcessor
 }
 
-func NewServer(conf config.Config, store db.Store, factory *publisher.PublisherFactory) (*Server, error) {
+func NewServer(conf config.Config, store db.Store, factory *publisher.PublisherFactory, taskDistributor *worker.TaskDistributor, taskprocessor *worker.TaskProcessor) (*Server, error) {
 	tokenMaker, err := token.NewPasetoMaker(conf.TokenSymmetricKey)
 	if err != nil {
 		return nil, fmt.Errorf("cannot create token maker: %w", err)
@@ -48,6 +51,8 @@ func NewServer(conf config.Config, store db.Store, factory *publisher.PublisherF
 		tokenMaker:       tokenMaker,
 		mq:               mq.GlobalRabbitMQ,
 		grpcClient:       pb.NewVideosForgeClient(conn),
+		taskDistributor:  taskDistributor,
+		taskprocessor:    taskprocessor,
 	}
 	server.setupRouter()
 

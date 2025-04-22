@@ -1,6 +1,7 @@
 package main
 
 import (
+	"github.com/hibiken/asynq"
 	"github.com/jackc/pgx/v5"
 	"github.com/pule1234/VideoForge/api"
 	"github.com/pule1234/VideoForge/cache"
@@ -14,6 +15,7 @@ import (
 	"github.com/pule1234/VideoForge/internal/publisher"
 	"github.com/pule1234/VideoForge/mq"
 	"github.com/pule1234/VideoForge/pb"
+	"github.com/pule1234/VideoForge/worker"
 	"github.com/rs/zerolog/log"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
@@ -48,16 +50,23 @@ func main() {
 	log.Info().Msg("启动消息消费者...")
 	go dyCrawler.Rabbit.ConsumeItem(processor.CreateCopyWriting, loadConfig.DouYingQueueName, dyCrawler.Postgres, global.GlobalCtx)
 
+	redisOpt := asynq.RedisClientOpt{
+		Addr: loadConfig.RedisSource,
+	}
+	taskDistributor := worker.NewTaskDistributor(redisOpt)
+	taskprocessor := worker.NewTaskProcessor(redisOpt)
+	go taskprocessor.Start()
+
 	log.Info().Msg("启动Gin服务器...")
-	go runGinServer(*loadConfig, q, factory)
+	go runGinServer(*loadConfig, q, factory, taskDistributor, taskprocessor)
 
 	log.Info().Msg("启动gRPC服务器...")
 	runGrpcServer(*loadConfig, q, factory)
 }
 
-func runGinServer(config config.Config, store db.Store, factory *publisher.PublisherFactory) {
+func runGinServer(config config.Config, store db.Store, factory *publisher.PublisherFactory, taskDistributor *worker.TaskDistributor, taskprocessor *worker.TaskProcessor) {
 
-	server, err := api.NewServer(config, store, factory)
+	server, err := api.NewServer(config, store, factory, taskDistributor, taskprocessor)
 	if err != nil {
 		log.Fatal().Err(err).Msg("cannot create GIN server")
 	}
@@ -73,8 +82,10 @@ func runGrpcServer(
 	config config.Config,
 	store db.Store,
 	factory *publisher.PublisherFactory,
+	taskDistributor *worker.TaskDistributor,
+	taskprocessor *worker.TaskProcessor,
 ) {
-	server, err := gapi.NewServer(config, store, factory)
+	server, err := gapi.NewServer(config, store, factory, taskDistributor, taskprocessor)
 	if err != nil {
 		log.Fatal().Err(err).Msg("cannot create gRPC server")
 	}
