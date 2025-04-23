@@ -63,24 +63,23 @@ func (server *Server) generateVideo(c *gin.Context) {
 	//将返回的taskID和user_id存储到数据库中
 	server.redis.SAdd(c, userName, result)
 
-	c.JSON(http.StatusOK, result)
+	c.JSON(http.StatusOK, gin.H{
+		"task_id": result,
+	})
 }
 
 // 获取用户视频列表
 func (server *Server) getVideos(c *gin.Context) {
 	var req getVideosByUidReq
-
-	if err := c.ShouldBindJSON(&req); err != nil {
+	if err := c.ShouldBindQuery(&req); err != nil {
 		c.JSON(http.StatusBadRequest, errorResponse(err))
 		return
 	}
-
 	userID, _, err := util.GetUserByToken(c, authorizationPayloadKey)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"error get user_id failed": err.Error()})
 		return
 	}
-
 	videos, err := server.store.GetVideosByUid(c, userID)
 	if err != nil {
 		return

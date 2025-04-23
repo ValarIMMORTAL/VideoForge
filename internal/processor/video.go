@@ -86,10 +86,11 @@ func GenerateVideo(
 					}
 					externalLink := conf.CdnDomain + params.VideoSubject + ".mp4"
 					arg := db.InsertVideoParams{
-						Title:    params.VideoSubject,
-						Url:      externalLink,
-						Duration: taskResp.Data.AudioDuration,
-						UserID:   userId,
+						Title:     params.VideoSubject,
+						Url:       externalLink,
+						Duration:  taskResp.Data.AudioDuration,
+						UserID:    userId,
+						Subscribe: timestamp,
 					}
 					video, err := store.InsertVideo(ctx, arg)
 					if err != nil {

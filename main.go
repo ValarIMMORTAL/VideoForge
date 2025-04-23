@@ -61,7 +61,7 @@ func main() {
 	go runGinServer(*loadConfig, q, factory, taskDistributor, taskprocessor)
 
 	log.Info().Msg("启动gRPC服务器...")
-	runGrpcServer(*loadConfig, q, factory)
+	runGrpcServer(*loadConfig, q, factory, taskDistributor, taskprocessor)
 }
 
 func runGinServer(config config.Config, store db.Store, factory *publisher.PublisherFactory, taskDistributor *worker.TaskDistributor, taskprocessor *worker.TaskProcessor) {
@@ -107,6 +107,5 @@ func runGrpcServer(
 	if err != nil {
 		log.Error().Err(err).Msg("gRPC server failed to serve")
 	}
-	// 这行代码通常不会执行，因为Serve方法会阻塞直到服务器关闭
 	log.Info().Msg("gRPC服务器已关闭")
 }

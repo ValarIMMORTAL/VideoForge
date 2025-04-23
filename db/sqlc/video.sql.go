@@ -70,17 +70,19 @@ insert into videos(
                    title,
                    url,
                    duration,
-                   user_id
+                   user_id,
+                   subscribe
 ) values (
-          $1,$2,$3,$4
+          $1,$2,$3,$4,$5
          )  RETURNING id, title, url, duration, user_id, subscribe, created_at, delete_at
 `
 
 type InsertVideoParams struct {
-	Title    string `json:"title"`
-	Url      string `json:"url"`
-	Duration int32  `json:"duration"`
-	UserID   int64  `json:"user_id"`
+	Title     string `json:"title"`
+	Url       string `json:"url"`
+	Duration  int32  `json:"duration"`
+	UserID    int64  `json:"user_id"`
+	Subscribe int64  `json:"subscribe"`
 }
 
 func (q *Queries) InsertVideo(ctx context.Context, arg InsertVideoParams) (Video, error) {
@@ -89,6 +91,7 @@ func (q *Queries) InsertVideo(ctx context.Context, arg InsertVideoParams) (Video
 		arg.Url,
 		arg.Duration,
 		arg.UserID,
+		arg.Subscribe,
 	)
 	var i Video
 	err := row.Scan(

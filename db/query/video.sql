@@ -3,9 +3,10 @@ insert into videos(
                    title,
                    url,
                    duration,
-                   user_id
+                   user_id,
+                   subscribe
 ) values (
-          $1,$2,$3,$4
+          $1,$2,$3,$4,$5
          )  RETURNING *;
 
 -- name: GetVideosByUid :many
