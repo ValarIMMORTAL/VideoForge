@@ -136,8 +136,11 @@ func (q *QiNiu) DownloadFile(
 		},
 		DownloadURLsProvider: urlsProvider,
 	})
-	if err != nil && downloaded == 0 {
-		log.Fatal(err)
+	if err != nil || downloaded == 0 {
+		if err == nil {
+			err = fmt.Errorf("unknown error (downloaded=%d bytes)", downloaded)
+		}
+		log.Printf("Download failed: %v (bytes: %d)", err, downloaded)
 		return "", err
 	}
 	return localFile, nil

@@ -5,6 +5,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/pule1234/VideoForge/pb"
 	"github.com/pule1234/VideoForge/util"
+	"github.com/rs/zerolog/log"
 	"net/http"
 	"os"
 	"strconv"
@@ -42,15 +43,20 @@ func (server *Server) UploadVideo(c *gin.Context) {
 	}
 	var tempFilePath string
 	if err == http.ErrMissingFile { // 不选择本地视频的情况
-		fmt.Println("missing file")
 		videoId := c.PostForm("video_id")
+		log.Info().Msg("video_id" + videoId)
 		if videoId == "" {
 			c.JSON(http.StatusBadRequest, gin.H{"error": "未指定视频"})
 			return
 		}
 		num, err := strconv.ParseInt(videoId, 10, 64)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": " failed" + err.Error()})
+			return
+		}
 		video, err2 := server.store.GetVideosById(c, num)
 		if err2 != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "get videoDetail failed" + err2.Error()})
 			return
 		}
 		tempFilePath, err = server.qnManager.DownloadFile(server.config.TempDir, video.Title, userName, "videofore-videos", video.Subscribe, "su15t494p.hn-bkt.clouddn.com")
@@ -134,6 +140,7 @@ func (server *Server) UploadVideoGrpc(c *gin.Context) {
 		num, err := strconv.ParseInt(videoId, 10, 64)
 		video, err2 := server.store.GetVideosById(c, num)
 		if err2 != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "获取视频失败: " + err.Error()})
 			return
 		}
 

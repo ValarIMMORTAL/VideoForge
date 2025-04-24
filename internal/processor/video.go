@@ -9,7 +9,7 @@ import (
 	"github.com/pule1234/VideoForge/config"
 	db "github.com/pule1234/VideoForge/db/sqlc"
 	"github.com/pule1234/VideoForge/mq"
-	"log"
+	"github.com/rs/zerolog/log"
 	"time"
 )
 
@@ -61,32 +61,32 @@ func GenerateVideo(
 			case <-time.After(10 * time.Second):
 				resp, err := SendGetRequest(taskUrl, conf)
 				if err != nil {
-					log.Println("Generate video failed: " + err.Error())
+					log.Error().Err(err).Msg("Generate video failed")
 					return
 				}
 				var taskResp TaskResult
 				_ = json.Unmarshal(resp, &taskResp)
 				fmt.Println("轮询中，当前 state:", taskResp.Data.State)
 				if taskResp.Data.State == TaskStateComplete {
-					log.Println("任务结束，视频生成完成")
+					log.Info().Msg("任务结束，视频生成完成")
 					redis.SRem(ctx, userName, taskId)
 					localPath := conf.VideoPath + "/" + taskId + "/combined-1.mp4"
 					err = storage.UploadFile(ctx, localPath, "videofore-videos", params.VideoSubject+".mp4", fileName+userName+fmt.Sprintf("%d", timestamp)+".mp4")
 					if err != nil {
-						log.Println("七牛云上传出错" + err.Error())
+						log.Error().Err(err).Msg("七牛云上传出错")
 						item := VideoMsg{
 							Event:   "GenerateVideo failed" + err.Error(),
 							User_id: userId,
 						}
 						err = msgQueue.PublishItem(item, queueName)
 						if err != nil {
-							log.Println("发送通知失败", err)
+							log.Error().Err(err).Msg("发送通知失败")
 						}
 						return
 					}
-					externalLink := conf.CdnDomain + params.VideoSubject + ".mp4"
+					externalLink := conf.CdnDomain + fileName + userName + fmt.Sprintf("%d", timestamp) + ".mp4"
 					arg := db.InsertVideoParams{
-						Title:     params.VideoSubject,
+						Title:     fileName,
 						Url:       externalLink,
 						Duration:  taskResp.Data.AudioDuration,
 						UserID:    userId,
@@ -94,7 +94,7 @@ func GenerateVideo(
 					}
 					video, err := store.InsertVideo(ctx, arg)
 					if err != nil {
-						log.Println("视频和用户绑定失败", err)
+						log.Error().Err(err).Msg("视频和用户绑定失败")
 						return
 					}
 					item := VideoMsg{
@@ -103,9 +103,10 @@ func GenerateVideo(
 						User_id:  video.UserID,
 						Url:      video.Url,
 					}
+
 					err = msgQueue.PublishItem(item, queueName)
 					if err != nil {
-						log.Println("发送通知失败", err)
+						log.Error().Err(err).Msg("发送通知失败")
 					}
 					return
 				} else if taskResp.Data.State == TaskStateFale {
@@ -115,7 +116,7 @@ func GenerateVideo(
 					}
 					err = msgQueue.PublishItem(item, queueName)
 					if err != nil {
-						log.Println("发送通知失败", err)
+						log.Error().Err(err).Msg("发送通知失败")
 					}
 					return
 				}

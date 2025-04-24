@@ -7,7 +7,7 @@ import (
 	"fmt"
 	db "github.com/pule1234/VideoForge/db/sqlc"
 	"github.com/pule1234/VideoForge/internal/models"
-	"log"
+	"github.com/rs/zerolog/log"
 	"time"
 
 	"github.com/pule1234/VideoForge/config"
@@ -84,6 +84,7 @@ func (r *RabbitMQ) PublishItem(item interface{}, queueName string) error {
 	//	log.Println("等待消息发送超时:", err)
 	//	return errors.New("等待消息发送超时" + err.Error())
 	//}
+	log.Info().Msg("push message success queueName : " + queueName)
 	return nil
 }
 
@@ -104,7 +105,7 @@ func (r *RabbitMQ) ConsumeItem(handler func(item []models.TrendingItem, dbStore 
 		nil,
 	)
 	if err != nil {
-		log.Println("consumer queuedeclare failed:", err.Error())
+		log.Fatal().Err(err).Msg("consumer queuedeclare failed")
 		return
 	}
 
@@ -124,7 +125,7 @@ func (r *RabbitMQ) ConsumeItem(handler func(item []models.TrendingItem, dbStore 
 		nil,   // args
 	)
 	if err != nil {
-		log.Println("comsumer consume message err : ", err.Error())
+		log.Fatal().Err(err).Msg("comsumer consume message err")
 	}
 
 	//启用协程处理消息
@@ -132,7 +133,7 @@ func (r *RabbitMQ) ConsumeItem(handler func(item []models.TrendingItem, dbStore 
 		for {
 			select {
 			case <-ctx.Done():
-				log.Println("Received shutdown signal. Exiting...")
+				log.Info().Msg("Received shutdown signal. Exiting...")
 				return
 
 			case d, ok := <-msgs:
@@ -147,7 +148,7 @@ func (r *RabbitMQ) ConsumeItem(handler func(item []models.TrendingItem, dbStore 
 
 				err = handler(items, dbStore) //关键字(title) 和信息来源(source)都在item中
 				if err != nil {
-					log.Println("处理消息失败:", err)
+					log.Fatal().Err(err).Msg("处理消息失败")
 					return
 				}
 			}
@@ -187,7 +188,7 @@ func (r *RabbitMQ) CloseWithTimeout(timeout time.Duration) error {
 	go func() {
 		// 等待所有消息发送完成
 		if err := r.waitForPendingMessages(); err != nil {
-			log.Println("等待消息发送超时:", err)
+			log.Error().Err(err).Msg("等待消息发送超时")
 		}
 		// 关闭通道和连接
 		if r.channel != nil {
@@ -218,10 +219,10 @@ func (r *RabbitMQ) waitForPendingMessages() error {
 		select {
 		case confirm := <-confirmChan:
 			if confirm.Ack {
-				log.Println("消息已确认 消息表示 : ", confirm.DeliveryTag)
+				log.Info().Msg("消息已确认 消息标识 ")
 				return nil
 			} else {
-				log.Println("消息未确认")
+				log.Info().Msg("消息未确认")
 				return errors.New("pending message failed")
 			}
 		case <-timeout:

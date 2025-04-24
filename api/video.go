@@ -1,6 +1,8 @@
 package api
 
 import (
+	"encoding/json"
+	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/pule1234/VideoForge/global"
 	"github.com/pule1234/VideoForge/internal/processor"
@@ -87,14 +89,18 @@ func (server *Server) getVideos(c *gin.Context) {
 	temp := []Videos{}
 	for _, video := range videos {
 		temp = append(temp, Videos{
-			id:    video.ID,
-			title: video.Title,
-			url:   video.Url,
+			Id:    video.ID,
+			Title: video.Title,
+			Url:   video.Url,
 		})
 	}
+
 	resp := getVideosByUidResp{
 		Videos: temp,
 	}
+	fmt.Println(temp)
+	marshal, _ := json.Marshal(resp)
+	fmt.Println(string(marshal))
 
 	c.JSON(http.StatusOK, gin.H{
 		"data": resp,

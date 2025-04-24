@@ -44,8 +44,8 @@ type getVideosByUidResp struct {
 }
 
 type Videos struct {
-	id       int64  `json:"id"`
-	title    string `json:"title"`
-	url      string `json:"url"`
-	duration int    `json:"duration"`
+	Id       int64  `json:"id"`
+	Title    string `json:"title"`
+	Url      string `json:"url"`
+	Duration int    `json:"duration"`
 }
