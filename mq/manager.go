@@ -1,6 +1,8 @@
 package mq
 
-import "sync"
+import (
+	"sync"
+)
 
 var (
 	GlobalRabbitMQ *RabbitMQ // 全局使用rabbitmq连接

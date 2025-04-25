@@ -29,7 +29,6 @@ func main() {
 		log.Fatal().Err(err).Msg("cannot load config")
 	}
 
-	mq.InitRabbitMQ()
 	cache.InitRedis()
 
 	conn, err := pgx.Connect(global.GlobalCtx, loadConfig.DBSource)
@@ -38,6 +37,7 @@ func main() {
 		log.Fatal().Err(err).Msg("connect postgres err")
 	}
 	q := db.New(conn)
+	mq.InitRabbitMQ()
 	//初始化QiNiu
 	cloud.InitQiNiu(q)
 	// 初始化 Publisher 工厂

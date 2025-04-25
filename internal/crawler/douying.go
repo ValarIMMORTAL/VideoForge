@@ -4,14 +4,11 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/gocolly/colly"
 	"github.com/pule1234/VideoForge/config"
 	db "github.com/pule1234/VideoForge/db/sqlc"
 	"github.com/pule1234/VideoForge/internal/models"
 	"github.com/pule1234/VideoForge/mq"
-	"github.com/rs/zerolog/log"
-	"time"
-
-	"github.com/gocolly/colly"
 )
 
 type DyCrawler struct {
@@ -82,10 +79,10 @@ func (d *DyCrawler) Start(url string) error {
 }
 
 // 优化关闭方法
-func (d *DyCrawler) Stop() {
-	if d.Rabbit != nil {
-		if err := d.Rabbit.CloseWithTimeout(10 * time.Second); err != nil { // 延长关闭超时时间
-			log.Printf("RabbitMQ关闭错误: %v", err)
-		}
-	}
-}
+//func (d *DyCrawler) Stop() {
+//	if d.Rabbit != nil {
+//		if err := d.Rabbit.CloseWithTimeout(10 * time.Second); err != nil { // 延长关闭超时时间
+//			log.Printf("RabbitMQ关闭错误: %v", err)
+//		}
+//	}
+//}
