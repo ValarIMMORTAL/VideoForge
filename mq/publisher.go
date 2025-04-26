@@ -125,7 +125,7 @@ func (r *RabbitMQ) scanAndRetryQueues(maxRetry int) {
 		cursor = newCursor
 		for _, key := range keys {
 			queueName := strings.TrimPrefix(key, "retry:")
-			r.retryMessages(ctx, queueName, maxRetry)
+			r.retrySendMessages(ctx, queueName, maxRetry)
 		}
 		if cursor == 0 {
 			break
@@ -133,7 +133,7 @@ func (r *RabbitMQ) scanAndRetryQueues(maxRetry int) {
 	}
 }
 
-func (r *RabbitMQ) retryMessages(ctx context.Context, queueName string, maxRetry int) {
+func (r *RabbitMQ) retrySendMessages(ctx context.Context, queueName string, maxRetry int) {
 	now := float64(time.Now().Unix())
 	msgs, err := r.redis.ZRangeByScore(ctx, "retry:"+queueName, &redis.ZRangeBy{
 		Min: "0",

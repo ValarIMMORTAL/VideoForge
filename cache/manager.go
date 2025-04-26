@@ -16,7 +16,7 @@ func InitRedis() error {
 	var err error
 	once.Do(func() {
 		RedisClient, err = NewRedisConn()
-		RedisConn = RedisClient.conn
+		RedisConn = RedisClient.Conn
 	})
 
 	return err
