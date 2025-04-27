@@ -11,6 +11,7 @@ import (
 	grpc "google.golang.org/grpc"
 	codes "google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"
+	emptypb "google.golang.org/protobuf/types/known/emptypb"
 )
 
 // This is a compile-time assertion to ensure that this generated file
@@ -25,6 +26,7 @@ const (
 	VideosForge_GenerateVideo_FullMethodName    = "/pb.VideosForge/GenerateVideo"
 	VideosForge_GetVideos_FullMethodName        = "/pb.VideosForge/GetVideos"
 	VideosForge_UploadVideo_FullMethodName      = "/pb.VideosForge/UploadVideo"
+	VideosForge_Crawler_FullMethodName          = "/pb.VideosForge/Crawler"
 )
 
 // VideosForgeClient is the client API for VideosForge service.
@@ -37,6 +39,7 @@ type VideosForgeClient interface {
 	GenerateVideo(ctx context.Context, in *GenerateVideoRequest, opts ...grpc.CallOption) (*GenerateVideoResponse, error)
 	GetVideos(ctx context.Context, in *GetVideosRequest, opts ...grpc.CallOption) (*GetVideosResponse, error)
 	UploadVideo(ctx context.Context, in *UploadVideoRequest, opts ...grpc.CallOption) (*UploadVideoResponse, error)
+	Crawler(ctx context.Context, in *CrawlerRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 }
 
 type videosForgeClient struct {
@@ -107,6 +110,16 @@ func (c *videosForgeClient) UploadVideo(ctx context.Context, in *UploadVideoRequ
 	return out, nil
 }
 
+func (c *videosForgeClient) Crawler(ctx context.Context, in *CrawlerRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(emptypb.Empty)
+	err := c.cc.Invoke(ctx, VideosForge_Crawler_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // VideosForgeServer is the server API for VideosForge service.
 // All implementations must embed UnimplementedVideosForgeServer
 // for forward compatibility.
@@ -117,6 +130,7 @@ type VideosForgeServer interface {
 	GenerateVideo(context.Context, *GenerateVideoRequest) (*GenerateVideoResponse, error)
 	GetVideos(context.Context, *GetVideosRequest) (*GetVideosResponse, error)
 	UploadVideo(context.Context, *UploadVideoRequest) (*UploadVideoResponse, error)
+	Crawler(context.Context, *CrawlerRequest) (*emptypb.Empty, error)
 	mustEmbedUnimplementedVideosForgeServer()
 }
 
@@ -144,6 +158,9 @@ func (UnimplementedVideosForgeServer) GetVideos(context.Context, *GetVideosReque
 }
 func (UnimplementedVideosForgeServer) UploadVideo(context.Context, *UploadVideoRequest) (*UploadVideoResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UploadVideo not implemented")
+}
+func (UnimplementedVideosForgeServer) Crawler(context.Context, *CrawlerRequest) (*emptypb.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Crawler not implemented")
 }
 func (UnimplementedVideosForgeServer) mustEmbedUnimplementedVideosForgeServer() {}
 func (UnimplementedVideosForgeServer) testEmbeddedByValue()                     {}
@@ -274,6 +291,24 @@ func _VideosForge_UploadVideo_Handler(srv interface{}, ctx context.Context, dec 
 	return interceptor(ctx, in, info, handler)
 }
 
+func _VideosForge_Crawler_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CrawlerRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(VideosForgeServer).Crawler(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: VideosForge_Crawler_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(VideosForgeServer).Crawler(ctx, req.(*CrawlerRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // VideosForge_ServiceDesc is the grpc.ServiceDesc for VideosForge service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -304,6 +339,10 @@ var VideosForge_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "UploadVideo",
 			Handler:    _VideosForge_UploadVideo_Handler,
+		},
+		{
+			MethodName: "Crawler",
+			Handler:    _VideosForge_Crawler_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

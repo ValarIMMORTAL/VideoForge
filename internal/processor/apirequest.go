@@ -52,11 +52,11 @@ func SendPostRequest(
 		return nil, errors.New("failed to push copywriting request: " + err.Error())
 	}
 
+	allResp, err := ioutil.ReadAll(res.Body)
 	if res.StatusCode != 200 {
-		return nil, errors.New("failed to push copywriting request: HTTP code " + strconv.Itoa(res.StatusCode))
+		return nil, errors.New(fmt.Sprintf("failed to push copywriting request: HTTP code %d", strconv.Itoa(res.StatusCode)))
 	}
 
-	allResp, err := ioutil.ReadAll(res.Body)
 	if err != nil {
 		return nil, err
 	}

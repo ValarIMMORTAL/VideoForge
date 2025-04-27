@@ -1,0 +1,12 @@
+syntax = "proto3";
+
+package pb;
+option go_package = "github.com/pule1234/VideoForge/pb;pb";
+
+message CrawlerRequest {
+  string url = 1;
+}
+
+//message CrawlerResponse {
+//  string result = 1;
+//}

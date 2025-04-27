@@ -65,7 +65,7 @@ func (server *Server) setupRouter() {
 	router.POST("/users/login", server.loginUser)
 	router.POST("/tokens/renew_access", server.renewAccessToken)
 	router.GET("/ping", server.callback)
-	router.GET("/ping")
+	router.POST("/Dycrawler", server.Dycrawler)
 	//加入token
 
 	authRoutes := router.Group("/").Use(authMiddleware(server.tokenMaker)) // 使用中间件进行认证

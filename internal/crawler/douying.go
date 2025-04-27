@@ -9,16 +9,17 @@ import (
 	db "github.com/pule1234/VideoForge/db/sqlc"
 	"github.com/pule1234/VideoForge/internal/models"
 	"github.com/pule1234/VideoForge/mq"
+	"github.com/rs/zerolog/log"
 )
 
 type DyCrawler struct {
 	Collector Collector
 	QueueName string
 	Rabbit    *mq.RabbitMQ //全局mq连接
-	Postgres  *db.Queries  // 数据库连接， 所有的Crawler都会携带一个连接， processor便不需要连接
+	Postgres  db.Store     // 数据库连接， 所有的Crawler都会携带一个连接， processor便不需要连接
 }
 
-func NewDyCrawler(queueName string, queries *db.Queries) (*DyCrawler, error) {
+func NewDyCrawler(queueName string, queries db.Store) (*DyCrawler, error) {
 	baseCrawler, err := NewCrawler() //已经定义好错误处理
 	if err != nil {
 		return nil, fmt.Errorf("创建爬虫失败: %v", err)
@@ -62,7 +63,10 @@ func NewDyCrawler(queueName string, queries *db.Queries) (*DyCrawler, error) {
 			mqItem = append(mqItem, item)
 		}
 		loadConfig, _ := config.LoadConfig("../../")
-		dc.Rabbit.PublishItem(mqItem, loadConfig.DouYingQueueName)
+		if err = dc.Rabbit.PublishItem(mqItem, loadConfig.DouYingQueueName); err != nil {
+			log.Error().Err(err).Msg("爬虫推送数据失败")
+			return
+		}
 	})
 
 	return dc, nil

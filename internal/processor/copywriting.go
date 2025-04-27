@@ -13,7 +13,7 @@ import (
 )
 
 // 根据根据关键字及关键字来源生成对应的文案，并存储
-func CreateCopyWriting(items []models.TrendingItem, dbStore *db.Queries) error {
+func CreateCopyWriting(items []models.TrendingItem, dbStore db.Store) error {
 	conf, err := config.LoadConfig("../../")
 	if err != nil {
 		return err
@@ -24,7 +24,10 @@ func CreateCopyWriting(items []models.TrendingItem, dbStore *db.Queries) error {
 	sourceArgs := []string{}
 	contentArgs := []string{}
 	dateArgs := []pgtype.Timestamp{}
-	for _, item := range items {
+	for index, item := range items {
+		if index == 2 {
+			break
+		}
 		titleArgs = append(titleArgs, item.Title)
 		sourceArgs = append(sourceArgs, item.Source)
 		dateArgs = append(dateArgs, pgtype.Timestamp{

@@ -10,7 +10,7 @@ import (
 )
 
 // simple 模式下消费者
-func (r *RabbitMQ) ConsumeItem(handler func(item []models.TrendingItem, dbStore *db.Queries) error, queueName string, dbStore *db.Queries, ctx context.Context) {
+func (r *RabbitMQ) ConsumeItem(handler func(item []models.TrendingItem, dbStore db.Store) error, queueName string, dbStore db.Store, ctx context.Context) {
 	err := r.channel.ExchangeDeclare(
 		"dlx.exchange",
 		"direct",
@@ -41,8 +41,8 @@ func (r *RabbitMQ) ConsumeItem(handler func(item []models.TrendingItem, dbStore 
 		return
 	}
 
-	const maxRetry = 3 // 设置最大重试次数
-
+	const maxRetry = 2 // 设置最大重试次数
+	r.channel.Qos(1, 0, false)
 	go func() {
 		for {
 			select {
@@ -53,8 +53,8 @@ func (r *RabbitMQ) ConsumeItem(handler func(item []models.TrendingItem, dbStore 
 				if !ok {
 					return
 				}
-				log.Printf("Received a message: %s", d.Body)
-
+				//log.Printf("Received a message: %s", d.Body)
+				log.Printf("Received a message:")
 				var items []models.TrendingItem
 				if err := json.Unmarshal(d.Body, &items); err != nil {
 					log.Error().Err(err).Msg("unmarshal failed, reject message")
@@ -71,13 +71,13 @@ func (r *RabbitMQ) ConsumeItem(handler func(item []models.TrendingItem, dbStore 
 					}
 
 					if retryCount >= maxRetry {
-						log.Error().Int("retry", retryCount).Msg("超过最大重试次数，进入死信队列")
+						log.Error().Int("retry", retryCount).Int("maxRetry", maxRetry).Msg("超过最大重试次数，进入死信队列")
 						_ = d.Reject(false)
 					} else {
-						log.Warn().Int("retry", retryCount).Msg("处理失败，重新投递")
-						_ = d.Reject(false)
+						log.Warn().Int("retry", retryCount).Int("maxRetry", maxRetry).Msg("处理失败，重新投递")
+						_ = d.Ack(false) // ack掉当前失败的老消息
 						// 重新发布消息（带上retry+1）
-						r.channel.Publish(
+						err = r.channel.Publish(
 							"", queueName, false, false,
 							amqp.Publishing{
 								ContentType: "application/json",
@@ -87,12 +87,15 @@ func (r *RabbitMQ) ConsumeItem(handler func(item []models.TrendingItem, dbStore 
 								},
 							},
 						)
+						if err != nil {
+							log.Error().Err(err).Msg("重新发布消息失败")
+							continue
+						}
 					}
-					continue
+				} else {
+					//处理成功，ack
+					_ = d.Ack(false)
 				}
-
-				//处理成功，ack
-				_ = d.Ack(false)
 			}
 		}
 	}()

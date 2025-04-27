@@ -21,7 +21,11 @@ func (r *RabbitMQ) PublishItem(item interface{}, queueName string) error {
 
 	//1.申请队列，如果队列不存在会自动创建，存在则跳过创建
 	_, err := r.channel.QueueDeclare(
-		queueName, true, false, false, false, nil,
+		queueName, true, false, false, false,
+		amqp.Table{
+			"x-dead-letter-exchange":    "dlx.exchange",
+			"x-dead-letter-routing-key": "dlx." + queueName,
+		},
 	)
 	if err != nil {
 		return fmt.Errorf("declare queue failed: %w", err)

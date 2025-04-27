@@ -5,6 +5,8 @@ import "user.proto";
 import "video.proto";
 import "publisher.proto";
 import "google/api/annotations.proto";
+import "crawler.proto";
+import "google/protobuf/empty.proto";
 
 option go_package = "github.com/pule1234/VideoForge/pb;pb";
 
@@ -47,6 +49,13 @@ service VideosForge {
   rpc UploadVideo (UploadVideoRequest) returns (UploadVideoResponse) {
     option (google.api.http) = {
       post: "/v1/upload_video"
+      body: "*"
+    };
+  }
+
+  rpc Crawler (CrawlerRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      post: "/v1/crawler"
       body: "*"
     };
   }
